@@ -5,6 +5,24 @@ import { config } from './config.js'
 import { type SupportedChatModel as SupportedChatModelType } from './schema.js'
 import { logCliDebug } from './logger.js'
 
+// Map short model names to OpenRouter's prefixed format
+const OPENROUTER_MODEL_MAP: Record<string, string> = {
+  'gemini-2.5-pro': 'google/gemini-2.5-pro',
+  'gemini-3-pro-preview': 'google/gemini-3-pro-preview',
+  'deepseek-reasoner': 'deepseek/deepseek-reasoner',
+  'gpt-5.2': 'openai/gpt-5.2',
+  'gpt-5.3-codex': 'openai/gpt-5.3-codex',
+  'gpt-5.2-codex': 'openai/gpt-5.2-codex',
+  'gpt-5.1-codex-max': 'openai/gpt-5.1-codex-max',
+  'gpt-5.1-codex': 'openai/gpt-5.1-codex',
+  'gpt-5.1-codex-mini': 'openai/gpt-5.1-codex-mini',
+  'gpt-5.1': 'openai/gpt-5.1',
+}
+
+function toOpenRouterModel(model: string): string {
+  return OPENROUTER_MODEL_MAP[model] ?? model
+}
+
 export interface LlmExecutor {
   execute(
     prompt: string,
@@ -23,7 +41,10 @@ export interface LlmExecutor {
  * Don't let it confuse you that client is of type OpenAI. We used OpenAI API
  * client for Gemini also.
  */
-function createApiExecutor(client: OpenAI): LlmExecutor {
+function createApiExecutor(
+  client: OpenAI,
+  options?: { mapModel?: (model: string) => string },
+): LlmExecutor {
   return {
     async execute(prompt, model, systemPrompt, filePaths) {
       if (filePaths && filePaths.length > 0) {
@@ -33,8 +54,10 @@ function createApiExecutor(client: OpenAI): LlmExecutor {
         )
       }
 
+      const resolvedModel = options?.mapModel ? options.mapModel(model) : model
+
       const completion = await client.chat.completions.create({
-        model,
+        model: resolvedModel,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: prompt },
@@ -186,6 +209,21 @@ const createExecutorProvider = () => {
   const executorCache = new Map<string, LlmExecutor>()
   const clientCache = new Map<string, OpenAI>()
 
+  const getOpenRouterClient = (): OpenAI => {
+    if (clientCache.has('openrouter')) return clientCache.get('openrouter')!
+    if (!config.openrouterApiKey) {
+      throw new Error(
+        'OPENROUTER_API_KEY environment variable is required for OpenRouter mode',
+      )
+    }
+    const client = new OpenAI({
+      apiKey: config.openrouterApiKey,
+      baseURL: 'https://openrouter.ai/api/v1',
+    })
+    clientCache.set('openrouter', client)
+    return client
+  }
+
   const getOpenAIClient = (): OpenAI => {
     if (clientCache.has('openai')) return clientCache.get('openai')!
     if (!config.openaiApiKey) {
@@ -229,11 +267,15 @@ const createExecutorProvider = () => {
   }
 
   return (model: SupportedChatModelType): LlmExecutor => {
+    // When OpenRouter is configured, route all models through it
+    const useOpenRouter = !!config.openrouterApiKey
+
     // Create cache key that includes mode for models that support CLI
-    const cacheKey =
-      model +
-      (model.startsWith('gpt-') ? `-${config.openaiMode}` : '') +
-      (model.startsWith('gemini-') ? `-${config.geminiMode}` : '')
+    const cacheKey = useOpenRouter
+      ? `openrouter-${model}`
+      : model +
+        (model.startsWith('gpt-') ? `-${config.openaiMode}` : '') +
+        (model.startsWith('gemini-') ? `-${config.geminiMode}` : '')
 
     if (executorCache.has(cacheKey)) {
       return executorCache.get(cacheKey)!
@@ -241,7 +283,12 @@ const createExecutorProvider = () => {
 
     let executor: LlmExecutor
 
-    if (model.startsWith('gpt-')) {
+    if (useOpenRouter) {
+      // OpenRouter handles all models via a single OpenAI-compatible endpoint
+      executor = createApiExecutor(getOpenRouterClient(), {
+        mapModel: toOpenRouterModel,
+      })
+    } else if (model.startsWith('gpt-')) {
       executor =
         config.openaiMode === 'cli'
           ? createCliExecutor(codexCliConfig)
