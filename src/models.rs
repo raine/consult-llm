@@ -25,6 +25,7 @@ pub enum Provider {
     MiniMax,
     Anthropic,
     Grok,
+    Antigravity,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -123,6 +124,7 @@ pub const ALL_PROVIDERS: &[Provider] = &[
     Provider::MiniMax,
     Provider::Anthropic,
     Provider::Grok,
+    Provider::Antigravity,
 ];
 
 /// The provider registry. Order matters: `all_builtin_models()` flattens in this order,
@@ -283,6 +285,34 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         reasoning_effort_env: None,
         extra_args_env: None,
     },
+    // Antigravity CLI (`agy --print`). CLI-only — there is no public API and
+    // `agy` v1.0.3 has no CLI flag for model selection: the active model is
+    // whatever was last picked in the Antigravity IDE GUI (persisted under
+    // ~/Library/Application Support/Antigravity/.../state.vscdb). So we expose
+    // a single `agy` model; users switch model from the IDE side.
+    // `api_protocol` is a placeholder — only `antigravity-cli` is allowed.
+    ProviderSpec {
+        provider: Provider::Antigravity,
+        id: "antigravity",
+        model_prefixes: &["agy"],
+        api_base_url: None,
+        api_protocol: ApiProtocol::OpenAiCompat(OpenAiCompatRuntime {
+            extra_body: None,
+            think_tags: None,
+        }),
+        builtin_models: &["agy"],
+        selector_priorities: &["agy"],
+        api_key_env: "ANTIGRAVITY_API_KEY",
+        backend_env: "CONSULT_LLM_ANTIGRAVITY_BACKEND",
+        legacy_backend_env: None,
+        legacy_mode_env: None,
+        cli_backend_value: None,
+        allowed_backends: &["antigravity-cli"],
+        opencode_env: "CONSULT_LLM_OPENCODE_ANTIGRAVITY_PROVIDER",
+        default_opencode_provider: "antigravity",
+        reasoning_effort_env: None,
+        extra_args_env: Some("CONSULT_LLM_AGY_EXTRA_ARGS"),
+    },
 ];
 
 impl Provider {
@@ -362,6 +392,7 @@ mod tests {
             ("MiniMax-M2.7", Provider::MiniMax),
             ("claude-opus-4-7", Provider::Anthropic),
             ("grok-4.3", Provider::Grok),
+            ("agy", Provider::Antigravity),
         ];
 
         let builtins = all_builtin_models();
@@ -433,7 +464,10 @@ mod tests {
             }
             if let Some(env) = spec.extra_args_env {
                 assert!(!env.is_empty());
-                assert!(matches!(spec.provider, Provider::Gemini | Provider::OpenAI));
+                assert!(matches!(
+                    spec.provider,
+                    Provider::Gemini | Provider::OpenAI | Provider::Antigravity
+                ));
             }
         }
 

@@ -422,11 +422,14 @@ minimax:
 grok:
   backend: api
   api_key: xai-test
+antigravity:
+  backend: antigravity-cli
+  extra_args: --add-dir /tmp
 opencode:
   default_provider: copilot
 "#;
         let cfg = ConfigFile::parse(yaml).expect("parses");
-        assert_eq!(cfg.providers.len(), 6);
+        assert_eq!(cfg.providers.len(), 7);
         for spec in PROVIDERS {
             assert!(
                 cfg.providers.contains_key(&spec.provider),
@@ -467,6 +470,8 @@ opencode:
             "--dangerously-bypass-approvals-and-sandbox"
         );
         assert_eq!(m["CONSULT_LLM_GEMINI_EXTRA_ARGS"], "--yolo");
+        assert_eq!(m["CONSULT_LLM_AGY_EXTRA_ARGS"], "--add-dir /tmp");
+        assert_eq!(m["CONSULT_LLM_ANTIGRAVITY_BACKEND"], "antigravity-cli");
         assert_eq!(m["CONSULT_LLM_OPENCODE_GEMINI_PROVIDER"], "google");
 
         // Opencode global default.

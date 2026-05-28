@@ -252,6 +252,7 @@ mod tests {
             Backend::GeminiCli,
             Backend::CursorCli,
             Backend::OpenCodeCli,
+            Backend::AntigravityCli,
         ];
         for b in &backends {
             assert_eq!(Backend::from_str(b.as_str()), Some(b.clone()));

@@ -32,6 +32,10 @@ pub fn parse_config(
         env("CONSULT_LLM_GEMINI_EXTRA_ARGS").as_deref(),
         "CONSULT_LLM_GEMINI_EXTRA_ARGS",
     )?;
+    let agy_extra_args = parse_extra_args(
+        env("CONSULT_LLM_AGY_EXTRA_ARGS").as_deref(),
+        "CONSULT_LLM_AGY_EXTRA_ARGS",
+    )?;
 
     let config = Config {
         providers,
@@ -40,6 +44,7 @@ pub fn parse_config(
         codex_reasoning_effort,
         codex_extra_args,
         gemini_extra_args,
+        agy_extra_args,
         api_idle_timeout,
         system_prompt_path: env("CONSULT_LLM_SYSTEM_PROMPT_PATH"),
         allowed_models: enabled_models.clone(),

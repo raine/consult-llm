@@ -13,6 +13,7 @@ pub enum Backend {
     GeminiCli,
     CursorCli,
     OpenCodeCli,
+    AntigravityCli,
 }
 
 impl Backend {
@@ -23,6 +24,7 @@ impl Backend {
             "gemini-cli" => Some(Backend::GeminiCli),
             "cursor-cli" => Some(Backend::CursorCli),
             "opencode" => Some(Backend::OpenCodeCli),
+            "antigravity-cli" => Some(Backend::AntigravityCli),
             _ => None,
         }
     }
@@ -34,6 +36,7 @@ impl Backend {
             Backend::GeminiCli => "gemini-cli",
             Backend::CursorCli => "cursor-cli",
             Backend::OpenCodeCli => "opencode",
+            Backend::AntigravityCli => "antigravity-cli",
         }
     }
 }
@@ -55,6 +58,7 @@ pub struct Config {
     pub codex_reasoning_effort: String,
     pub codex_extra_args: Vec<String>,
     pub gemini_extra_args: Vec<String>,
+    pub agy_extra_args: Vec<String>,
     pub api_idle_timeout: Duration,
     pub system_prompt_path: Option<String>,
     pub allowed_models: Vec<String>,

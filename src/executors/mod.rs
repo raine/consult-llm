@@ -1,5 +1,6 @@
 pub mod anthropic_api;
 pub mod anthropic_events;
+pub mod antigravity_cli;
 pub mod api;
 pub mod api_chat;
 pub mod api_common;

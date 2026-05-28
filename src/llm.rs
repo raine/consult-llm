@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::config::{Backend, Config};
 use crate::executors::anthropic_api::AnthropicApiExecutor;
+use crate::executors::antigravity_cli::AntigravityCliExecutor;
 use crate::executors::api::ApiExecutor;
 use crate::executors::codex_cli::CodexCliExecutor;
 use crate::executors::cursor_cli::CursorCliExecutor;
@@ -102,6 +103,9 @@ impl ExecutorProvider {
             Backend::OpenCodeCli => {
                 let prefix = cfg.opencode_provider_for(provider).to_string();
                 Arc::new(OpenCodeCliExecutor::new(prefix))
+            }
+            Backend::AntigravityCli => {
+                Arc::new(AntigravityCliExecutor::new(cfg.agy_extra_args.clone()))
             }
         };
 

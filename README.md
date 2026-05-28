@@ -435,6 +435,7 @@ A **backend** is how `consult-llm` reaches that model family:
 | MiniMax      | yes           | `opencode`                             | `MINIMAX_API_KEY`   |
 | Anthropic    | yes           | none                                   | `ANTHROPIC_API_KEY` |
 | Grok         | yes           | none                                   | `XAI_API_KEY`       |
+| Antigravity  | no            | `antigravity-cli`                      | n/a (login via IDE) |
 
 ### API backend
 
@@ -493,6 +494,23 @@ consult-llm config set gemini.backend cursor-cli
 ```
 
 If your prompts need shell commands in Cursor CLI ask mode, allow them in `~/.cursor/cli-config.json`.
+
+**Antigravity CLI**: routes through `agy` (Google Antigravity CLI v1.0.3+). The
+active model is whatever you last picked in the Antigravity IDE — agy has no CLI
+flag for model selection. Single model ID: `agy`.
+
+```bash
+consult-llm config set antigravity.backend antigravity-cli
+
+# Optional: append extra args to every agy invocation. Shell-quoted.
+consult-llm config set antigravity.extra_args '--add-dir /path/to/extra'
+```
+
+Caveats: agy is an autonomous agent — with `--dangerously-skip-permissions`
+(which this backend passes) it can read/write files and run commands on its
+own before answering. Output mixes tool narration with the answer. No
+streaming JSON, no token-usage reporting, no thread IDs (only `--continue`
+for most-recent resume).
 
 **OpenCode**: routes through `opencode` to Copilot, OpenRouter, or other providers:
 

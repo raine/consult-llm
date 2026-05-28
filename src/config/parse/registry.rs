@@ -182,6 +182,7 @@ mod tests {
                 "MiniMax-M2.7",
                 "claude-opus-4-7",
                 "grok-4.3",
+                "agy",
             ]
         );
     }
