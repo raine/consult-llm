@@ -509,8 +509,8 @@ consult-llm config set antigravity.extra_args '--add-dir /path/to/extra'
 Caveats: agy is an autonomous agent — with `--dangerously-skip-permissions`
 (which this backend passes) it can read/write files and run commands on its
 own before answering. Output mixes tool narration with the answer. No
-streaming JSON, no token-usage reporting, no thread IDs (only `--continue`
-for most-recent resume).
+streaming JSON, no token-usage reporting. Multi-turn threads are not
+supported (`-t` is rejected) because agy never prints conversation IDs.
 
 **OpenCode**: routes through `opencode` to Copilot, OpenRouter, or other providers:
 
