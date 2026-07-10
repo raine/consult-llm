@@ -1,7 +1,7 @@
 ---
 name: phased-implement
 description: Coordinator workflow for multi-phase implementation across workmux worktrees. Generates or loads a master plan, dispatches phase agents using presets, verifies sentinels, merges serially, and performs integration verification.
-allowed-tools: Bash, Read, Write, Glob, Grep
+allowed-tools: Agent, Bash, Read, Write, Glob, Grep
 ---
 
 Coordinate multi-phase implementation across workmux worktrees. The coordinator owns the master plan, phase dispatch, merge order, ancestry checks, final integration validation, and final summary. The coordinator does not edit source files for feature work.
@@ -34,6 +34,7 @@ Parse these flags before starting:
 - `--reviewer <selector>`: consult-llm selector for optional integration review. Repeatable.
 - `--reviewers <selector,selector>`: comma-separated reviewer selectors.
 - `--integration-review none|auto|full`: final integration review policy. Default: `auto`.
+- `--review-backend consult-llm|subagent`: choose how phase plan reviews and integration reviews run. Default: `consult-llm`.
 
 Everything else is the requested multi-phase implementation.
 
@@ -62,7 +63,7 @@ strict:
   verification: full
 ```
 
-Advanced master plans may override compiled fields per phase. Apply overrides after resolving the phase preset.
+Advanced master plans may override compiled fields per phase. Apply overrides after resolving the phase preset. A phase without `review_backend` uses the workflow-level review backend.
 
 ## Required artifacts
 
@@ -151,6 +152,7 @@ phases:
       - "Given a valid request, when the API is called, then it returns the new response shape."
     planning: consult-first
     plan_review: full
+    review_backend: subagent
     executor: sideagent
     verification: light
 ```
@@ -180,6 +182,7 @@ Optional compiled-field overrides:
 
 - `planning`: `note`, `rich`, or `consult-first`
 - `plan_review`: `none`, `narrow`, or `full`
+- `review_backend`: `consult-llm` or `subagent`
 - `executor`: `self` or `sideagent`
 - `verification`: `light` or `full`
 - `validation`: phase-specific validation command
@@ -280,7 +283,7 @@ You are implementing one phase in a workmux worktree.
 
 Run this implementation workflow:
 
-`/implement --preset <preset> --planning <planning> --plan-review <plan_review> --executor <executor> --verification <verification> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
+`/implement --preset <preset> --planning <planning> --plan-review <plan_review> --review-backend <review_backend> --executor <executor> --verification <verification> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
 
 If the local command interface does not accept compiled-field flags, include the compiled fields in the implementation request and keep the preset as the primary interface.
 
@@ -290,7 +293,7 @@ If the local command interface does not accept compiled-field flags, include the
 - Description: <description>
 - Paths: <paths>
 - Preset: `<preset>`
-- Compiled fields: planning=<planning>, plan_review=<plan_review>, executor=<executor>, verification=<verification>
+- Compiled fields: planning=<planning>, plan_review=<plan_review>, review_backend=<review_backend>, executor=<executor>, verification=<verification>
 - Master plan: `<path>`
 - Dependencies: <dependencies>
 
@@ -314,6 +317,7 @@ phase_id: <phase-id>
 preset: light | standard | design | strict
 planning: note | rich | consult-first
 plan_review: none | narrow | full
+review_backend: consult-llm | subagent
 executor: self | sideagent
 verification: light | full
 worktree: <workmux worktree name>
@@ -431,10 +435,14 @@ When all phases merge:
 Final integration review policy:
 
 - `none`: skip external integration review.
-- `auto`: run full external integration review when any phase used `design` or `strict`, or when multiple phases changed shared contracts. Otherwise skip.
-- `full`: always run full external integration review.
+- `auto`: run full integration review when any phase used `design` or `strict`, or when multiple phases changed shared contracts. Otherwise skip.
+- `full`: always run full integration review.
 
-For final integration review, load the `consult-llm` skill before calling consult-llm. Attach the master plan, phase sentinels, and relevant diffs or files. Use `--task review`, supplied reviewer selectors if present, quoted heredoc terminator `__CONSULT_LLM_END__`, and Bash timeout `600000`.
+For final integration review, use the selected review backend with the master plan, phase sentinels, and relevant diffs or files. Use the prompt below.
+
+For `review_backend: consult-llm`, load the `consult-llm` skill before calling consult-llm. Use `--task review`, supplied reviewer selectors if present, the quoted heredoc terminator `__CONSULT_LLM_END__`, and Bash timeout `600000`.
+
+For `review_backend: subagent`, use the Agent tool with one general-purpose subagent. Tell it to read the supplied paths, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Use one subagent unless the user explicitly requests multiple reviewers.
 
 Prompt shape:
 
@@ -463,6 +471,7 @@ master_plan: <path>
 final_validation: <command>
 final_validation_status: passed | failed | skipped
 integration_review: none | skipped | passed | failed
+review_backend: consult-llm | subagent
 
 ## Phases
 
