@@ -81,8 +81,8 @@ mod tests {
             ("CONSULT_LLM_DEFAULT_MODEL", "openai"),
         ]);
         let (config, registry) = parse_config(env).unwrap();
-        assert_eq!(config.default_model, Some("gpt-5.5".to_string()));
-        assert_eq!(registry.default_model, Some("gpt-5.5".to_string()));
+        assert_eq!(config.default_model, Some("gpt-5.6-sol".to_string()));
+        assert_eq!(registry.default_model, Some("gpt-5.6-sol".to_string()));
     }
 
     #[test]
@@ -95,7 +95,7 @@ mod tests {
         let (config, _) = parse_config(env).unwrap();
         assert_eq!(
             config.default_models,
-            vec!["gpt-5.5", "gemini-3.1-pro-preview", "gpt-5.5"]
+            vec!["gpt-5.6-sol", "gemini-3.1-pro-preview", "gpt-5.6-sol"]
         );
     }
 
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(registry.default_models, config.default_models);
         assert_eq!(
             registry.default_models,
-            vec!["gpt-5.5", "gemini-3.1-pro-preview", "gpt-5.5"]
+            vec!["gpt-5.6-sol", "gemini-3.1-pro-preview", "gpt-5.6-sol"]
         );
     }
 }

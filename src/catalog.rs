@@ -188,6 +188,18 @@ mod tests {
     }
 
     #[test]
+    fn test_model_registry_resolve_openai_selector_prefers_gpt_5_6_sol() {
+        let reg = ModelRegistry {
+            allowed_models: vec!["gpt-5.5".into(), "gpt-5.6-sol".into()],
+            fallback_model: "gpt-5.5".into(),
+            default_model: None,
+            default_models: vec![],
+        };
+
+        assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-5.6-sol");
+    }
+
+    #[test]
     fn test_model_registry_resolve_openai_selector_falls_to_codex() {
         let reg = ModelRegistry {
             allowed_models: vec!["gpt-5.3-codex".into(), "gpt-5.2-codex".into()],

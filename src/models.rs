@@ -203,11 +203,13 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &[
             "gpt-5.2",
             "gpt-5.4",
+            "gpt-5.6-sol",
             "gpt-5.5",
             "gpt-5.3-codex",
             "gpt-5.2-codex",
         ],
         selector_priorities: &[
+            "gpt-5.6-sol",
             "gpt-5.5",
             "gpt-5.4",
             "gpt-5.3-codex",
@@ -451,6 +453,7 @@ mod tests {
             ("deepseek-v4-pro", Provider::DeepSeek),
             ("gpt-5.2", Provider::OpenAI),
             ("gpt-5.4", Provider::OpenAI),
+            ("gpt-5.6-sol", Provider::OpenAI),
             ("gpt-5.5", Provider::OpenAI),
             ("gpt-5.3-codex", Provider::OpenAI),
             ("gpt-5.2-codex", Provider::OpenAI),
