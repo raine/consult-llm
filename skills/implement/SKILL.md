@@ -252,7 +252,7 @@ For `review_backend: consult-llm`, load the `consult-llm` skill before calling c
 
 ### Subagent review backend
 
-For `review_backend: subagent`, use the Agent tool with a general-purpose subagent. Give it the applicable review prompt below and the paths to the plan, relevant source files, tests, and parent plan if any. Tell it to read those files, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Run one subagent review unless the user explicitly requests multiple reviewers.
+For `review_backend: subagent`, use the Agent tool with a general-purpose subagent at `high` effort. Give it the applicable review prompt below and the paths to the plan, relevant source files, tests, and parent plan if any. Tell it to read those files, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Run one subagent review unless the user explicitly requests multiple reviewers.
 
 ### Narrow plan review prompt
 

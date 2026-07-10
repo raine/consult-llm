@@ -442,7 +442,7 @@ For final integration review, use the selected review backend with the master pl
 
 For `review_backend: consult-llm`, load the `consult-llm` skill before calling consult-llm. Use `--task review`, supplied reviewer selectors if present, the quoted heredoc terminator `__CONSULT_LLM_END__`, and Bash timeout `600000`.
 
-For `review_backend: subagent`, use the Agent tool with one general-purpose subagent. Tell it to read the supplied paths, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Use one subagent unless the user explicitly requests multiple reviewers.
+For `review_backend: subagent`, use the Agent tool with one general-purpose subagent at `high` effort. Tell it to read the supplied paths, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Use one subagent unless the user explicitly requests multiple reviewers.
 
 Prompt shape:
 
