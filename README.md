@@ -21,7 +21,7 @@
 
 `consult-llm` is a tool for getting a second opinion from another AI model,
 right inside your existing agent workflow. Use it to plan architecture,
-review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-5.5, Gemini 3.1 Pro, Claude Opus 4.7,
+review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-5.6 Sol, Gemini 3.1 Pro, Claude Opus 4.7,
 DeepSeek V4 Pro, MiniMax M2.7, Grok 4.3, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
 multi-turn threads, git diff context, web-mode clipboard export, and a live monitor TUI.
 
@@ -479,10 +479,13 @@ consult-llm config set gemini.backend gemini-cli
 
 #### Codex CLI
 
-Requires Codex CLI and `codex login`:
+Requires Codex CLI and `codex login`. GPT-5.6 Sol is the preferred built-in
+OpenAI model and works with the Codex CLI backend:
 
 ```bash
 consult-llm config set openai.backend codex-cli
+consult-llm config set allowed_models '[gpt-5.6-sol]'
+consult-llm config set default_model gpt-5.6-sol
 consult-llm config set openai.reasoning_effort high  # none | minimal | low | medium | high | xhigh
 
 # Optional: append extra args to every `codex exec` invocation. Shell-quoted.
@@ -594,7 +597,7 @@ extra_models:
   - openrouter/xiaomi/mimo-v2.5-pro
 
 allowed_models:
-  - gpt-5.5
+  - gpt-5.6-sol
   - gemini-3.1-pro-preview
   - openrouter/xiaomi/mimo-v2.5-pro
 ```
@@ -639,7 +642,7 @@ the conversation with full context from prior turns.
 ⏺ Bash(cat <<'EOF' | consult-llm -m codex
   What's the best caching strategy for a read-heavy API?
   EOF)
-  ⎿  [model:gpt-5.5] [thread_id:thread_b1ff711...]
+  ⎿  [model:gpt-5.6-sol] [thread_id:thread_b1ff711...]
 
      Redis with TTL-based invalidation. Set short TTLs for volatile data ...
 
@@ -650,7 +653,7 @@ the conversation with full context from prior turns.
   What if we need strong consistency guarantees? Does that change your
   recommendation?
   EOF)
-  ⎿  [model:gpt-5.5] [thread_id:thread_b1ff711...]
+  ⎿  [model:gpt-5.6-sol] [thread_id:thread_b1ff711...]
 
      Yes. With strong consistency, the TTL approach breaks down. Consider
      write-through caching or cache invalidation on writes instead ...
@@ -719,9 +722,9 @@ If `default_models` names a model excluded by `allowed_models`, config loading f
 Example `~/.config/consult-llm/config.yaml`:
 
 ```yaml
-allowed_models: [gemini-3.1-pro-preview, gpt-5.5, grok-4.3]
-default_model: gpt-5.5
-default_models: [gpt-5.5, gpt-5.5]
+allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.3]
+default_model: gpt-5.6-sol
+default_models: [gpt-5.6-sol, gpt-5.6-sol]
 
 gemini:
   backend: gemini-cli
