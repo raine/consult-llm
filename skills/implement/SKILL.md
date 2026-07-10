@@ -1,7 +1,7 @@
 ---
 name: implement
 description: One-unit implementation workflow using presets. It writes a compact note or rich code-bearing plan, optionally consults external LLMs, optionally delegates execution to sideagent, verifies, commits, and summarizes.
-allowed-tools: Agent, Bash, Glob, Grep, Read, Edit, Write
+allowed-tools: Bash, Glob, Grep, Read, Edit, Write
 ---
 
 Implement one bounded unit of work. Optimize for cheap execution by doing enough reasoning before edits that the executor can follow concrete instructions instead of inventing design, APIs, tests, or control flow.
@@ -15,7 +15,6 @@ Parse these flags before starting:
 - `--preset light|standard|design|strict`: workflow preset. Default: `standard`.
 - `--planning note|rich|consult-first`: override compiled planning mode.
 - `--plan-review none|narrow|full`: override compiled plan review mode.
-- `--review-backend consult-llm|subagent`: choose how plan reviews run. Default: `consult-llm`.
 - `--executor self|sideagent`: override compiled executor.
 - `--verification light|full`: override compiled verification.
 - `--parent-plan <path>`: path to a master plan or phase brief.
@@ -114,7 +113,7 @@ For `planning: note`, write a compact implementation note:
 
 **Goal:** <one sentence>
 **Preset:** light
-**Compiled fields:** planning=note, plan_review=none, review_backend=<backend>, executor=self, verification=light
+**Compiled fields:** planning=note, plan_review=none, executor=self, verification=light
 **Parent plan:** <path or n/a>
 **Start commit:** <sha>
 **Validation:** `<command>`
@@ -139,7 +138,7 @@ For `planning: rich`, research first and write a rich code-bearing plan:
 
 **Goal:** <one sentence>
 **Preset:** standard | design | strict
-**Compiled fields:** planning=<mode>, plan_review=<mode>, review_backend=<backend>, executor=<mode>, verification=<mode>
+**Compiled fields:** planning=<mode>, plan_review=<mode>, executor=<mode>, verification=<mode>
 **Parent plan:** <path or n/a>
 **Start commit:** <sha>
 **Approach:** <2-3 sentences>
@@ -244,15 +243,7 @@ Synthesize one rich implementation plan from the proposals and source evidence. 
 
 Skip this phase for `plan_review: none`.
 
-For `plan_review: narrow` or `full`, use the selected review backend. Attach or provide the plan, relevant source files, tests, and parent plan if any.
-
-### Consult-llm review backend
-
-For `review_backend: consult-llm`, load the `consult-llm` skill before calling consult-llm. Use `--task review`, supplied reviewer selectors when present, the quoted heredoc terminator `__CONSULT_LLM_END__`, and Bash timeout `600000`.
-
-### Subagent review backend
-
-For `review_backend: subagent`, use the Agent tool with a general-purpose subagent at `high` effort. Give it the applicable review prompt below and the paths to the plan, relevant source files, tests, and parent plan if any. Tell it to read those files, review only, return actionable feedback, and make no edits. Reviewer selectors apply only to consult-llm and are ignored for this backend. Run one subagent review unless the user explicitly requests multiple reviewers.
+For `plan_review: narrow` or `full`, load the `consult-llm` skill before calling consult-llm. Attach the plan, relevant source files, tests, and parent plan if any. Use `--task review`. Use supplied reviewer selectors when present. Use the quoted heredoc terminator `__CONSULT_LLM_END__` and Bash timeout `600000`.
 
 ### Narrow plan review prompt
 
@@ -389,7 +380,6 @@ status: success | blocked | failed
 preset: light | standard | design | strict
 planning: note | rich | consult-first
 plan_review: none | narrow | full
-review_backend: consult-llm | subagent
 executor: self | sideagent
 verification: light | full
 start_commit: <sha>
@@ -431,7 +421,7 @@ After committing, print the final summary:
 
 - Preset: <preset>
 - Plan or note: `<path>`
-- Review: <none | narrow passed | full passed | blocker> via <consult-llm | subagent | n/a>
+- Review: <none | narrow passed | full passed | blocker>
 - Executor: <self | sideagent>
 - Validation: `<command>` <passed | failed | skipped>
 - Verification: <light | full> <passed | failed>
