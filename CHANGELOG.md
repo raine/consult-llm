@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.23 (2026-07-10)
+
+- Added GPT-5.6 Sol support, with the `openai` selector preferring it when available.
+
 ## v3.0.22 (2026-06-27)
 
 - Claude CLI runs now pass attached files as `@file` references instead of inlining file contents, avoiding prompt-size failures for large file context.
