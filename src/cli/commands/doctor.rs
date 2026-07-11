@@ -147,6 +147,7 @@ fn backend_binary(backend: &str) -> Option<&'static str> {
     match backend {
         "codex-cli" => Some("codex"),
         "gemini-cli" => Some("gemini"),
+        "grok-cli" => Some("grok"),
         "cursor-cli" => Some("cursor-agent"),
         "opencode" => Some("opencode"),
         "claude-cli" => Some("claude"),

@@ -44,6 +44,10 @@ pub fn parse_config_with_cli_profiles(
         env("CONSULT_LLM_GEMINI_EXTRA_ARGS").as_deref(),
         "CONSULT_LLM_GEMINI_EXTRA_ARGS",
     )?;
+    let grok_extra_args = parse_extra_args(
+        env("CONSULT_LLM_GROK_EXTRA_ARGS").as_deref(),
+        "CONSULT_LLM_GROK_EXTRA_ARGS",
+    )?;
     let claude_extra_args = parse_extra_args(
         env("CONSULT_LLM_CLAUDE_EXTRA_ARGS").as_deref(),
         "CONSULT_LLM_CLAUDE_EXTRA_ARGS",
@@ -57,6 +61,7 @@ pub fn parse_config_with_cli_profiles(
         claude_reasoning_effort,
         codex_extra_args,
         gemini_extra_args,
+        grok_extra_args,
         claude_extra_args,
         api_idle_timeout,
         system_prompt_path: env("CONSULT_LLM_SYSTEM_PROMPT_PATH"),

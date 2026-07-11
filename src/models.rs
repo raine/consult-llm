@@ -286,18 +286,18 @@ pub static PROVIDERS: &[ProviderSpec] = &[
             extra_body: None,
             think_tags: None,
         }),
-        builtin_models: &["grok-4.3"],
-        selector_priorities: &["grok-4.3"],
+        builtin_models: &["grok-4.5", "grok-4.3"],
+        selector_priorities: &["grok-4.5", "grok-4.3"],
         api_key_env: "XAI_API_KEY",
         backend_env: "CONSULT_LLM_GROK_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "cursor-cli", "profile"],
+        allowed_backends: &["api", "grok-cli", "cursor-cli", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_GROK_PROVIDER",
         default_opencode_provider: "xai",
         reasoning_effort_env: None,
-        extra_args_env: None,
+        extra_args_env: Some("CONSULT_LLM_GROK_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_GROK_CLI_PROFILE",
     },
     ProviderSpec {
@@ -459,6 +459,7 @@ mod tests {
             ("gpt-5.2-codex", Provider::OpenAI),
             ("MiniMax-M2.7", Provider::MiniMax),
             ("claude-opus-4-7", Provider::Anthropic),
+            ("grok-4.5", Provider::Grok),
             ("grok-4.3", Provider::Grok),
             ("openrouter/auto", Provider::OpenRouter),
             ("glm-5.2", Provider::Zai),
@@ -576,7 +577,7 @@ mod tests {
                 assert!(!env.is_empty());
                 assert!(matches!(
                     spec.provider,
-                    Provider::Gemini | Provider::OpenAI | Provider::Anthropic
+                    Provider::Gemini | Provider::OpenAI | Provider::Anthropic | Provider::Grok
                 ));
             }
             assert!(!spec.cli_profile_env.is_empty());

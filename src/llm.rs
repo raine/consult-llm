@@ -9,6 +9,7 @@ use crate::executors::claude_cli::{ClaudeCliConfig, ClaudeCliExecutor};
 use crate::executors::codex_cli::CodexCliExecutor;
 use crate::executors::cursor_cli::CursorCliExecutor;
 use crate::executors::gemini_cli::GeminiCliExecutor;
+use crate::executors::grok_cli::GrokCliExecutor;
 use crate::executors::opencode_cli::OpenCodeCliExecutor;
 use crate::executors::types::LlmExecutor;
 use crate::models::{ApiProtocol, Provider};
@@ -101,6 +102,10 @@ impl ExecutorProvider {
             )),
             Backend::GeminiCli => Arc::new(GeminiCliExecutor::new(
                 cfg.gemini_extra_args.clone(),
+                cfg.env_for(provider).clone(),
+            )),
+            Backend::GrokCli => Arc::new(GrokCliExecutor::new(
+                cfg.grok_extra_args.clone(),
                 cfg.env_for(provider).clone(),
             )),
             Backend::ClaudeCli => {
@@ -217,6 +222,17 @@ mod tests {
             .get_executor("claude-opus-4-7")
             .expect("should create claude cli executor");
         assert_eq!(executor.reasoning_effort("claude-opus-4-7"), Some("xhigh"));
+    }
+
+    #[test]
+    fn test_grok_cli_executor_is_created() {
+        let env = env_from(&[("CONSULT_LLM_GROK_BACKEND", "grok-cli")]);
+        let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
+        let provider = ExecutorProvider::new(Arc::new(config));
+        let executor = provider
+            .get_executor("grok-4.5")
+            .expect("should create grok cli executor");
+        assert_eq!(executor.backend_name(), "grok_cli");
     }
 
     #[test]

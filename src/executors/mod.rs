@@ -11,6 +11,7 @@ pub mod codex_cli;
 pub mod cursor_cli;
 pub mod cursor_models;
 pub mod gemini_cli;
+pub mod grok_cli;
 pub mod opencode_cli;
 mod opencode_db;
 pub mod sse;

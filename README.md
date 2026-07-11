@@ -22,7 +22,7 @@
 `consult-llm` is a tool for getting a second opinion from another AI model,
 right inside your existing agent workflow. Use it to plan architecture,
 review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-5.6 Sol, Gemini 3.1 Pro, Claude Opus 4.7,
-DeepSeek V4 Pro, MiniMax M2.7, Grok 4.3, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
+DeepSeek V4 Pro, MiniMax M2.7, Grok 4.5, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
 multi-turn threads, git diff context, web-mode clipboard export, and a live monitor TUI.
 
 ## Why a second opinion?
@@ -435,7 +435,7 @@ A **backend** is how `consult-llm` reaches that model family:
 | DeepSeek     | yes           | `opencode`, `profile`                             | `DEEPSEEK_API_KEY`   |
 | MiniMax      | yes           | `opencode`, `profile`                             | `MINIMAX_API_KEY`    |
 | Anthropic    | yes           | `profile`, `claude-cli`, `cursor-cli`             | `ANTHROPIC_API_KEY`  |
-| Grok         | yes           | `cursor-cli`, `profile`                           | `XAI_API_KEY`        |
+| Grok         | yes           | `grok-cli`, `cursor-cli`, `profile`               | `XAI_API_KEY`        |
 | Zai (GLM)    | yes           | `profile`                                         | `ZAI_API_TOKEN`      |
 | OpenRouter   | yes           | `opencode`, `profile`                             | `OPENROUTER_API_KEY` |
 
@@ -493,7 +493,25 @@ consult-llm config set openai.reasoning_effort high  # none | minimal | low | me
 consult-llm config set openai.extra_args '--dangerously-bypass-approvals-and-sandbox'
 ```
 
-The same `extra_args` field is supported on `gemini:` for the Gemini CLI backend.
+The same `extra_args` field is supported on `gemini:` and `grok:` for their native CLI backends.
+
+#### Grok CLI
+
+Requires the Grok CLI on `PATH` and an authenticated Grok account. Grok 4.5 is
+the preferred built-in Grok model:
+
+```bash
+consult-llm config set grok.backend grok-cli
+consult-llm config set allowed_models '[grok-4.5]'
+consult-llm config set default_model grok-4.5
+
+# Optional: append extra args to every Grok CLI invocation. Shell-quoted.
+consult-llm config set grok.extra_args '--reasoning-effort high'
+```
+
+The backend uses the CLI's headless streaming JSON mode and preserves session
+IDs for multi-turn consultations. Authentication and subscription access are
+managed by the Grok CLI, so `XAI_API_KEY` is unnecessary.
 
 Provider blocks support `env` for values that should be set only while launching that provider backend:
 
@@ -722,7 +740,7 @@ If `default_models` names a model excluded by `allowed_models`, config loading f
 Example `~/.config/consult-llm/config.yaml`:
 
 ```yaml
-allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.3]
+allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.5]
 default_model: gpt-5.6-sol
 default_models: [gpt-5.6-sol, gpt-5.6-sol]
 
@@ -860,7 +878,7 @@ Environment variables override config file values.
 | `CONSULT_LLM_DEEPSEEK_BACKEND`             | Backend for DeepSeek models                                                             | `api` `opencode` `profile`                           | `api`                                                |
 | `CONSULT_LLM_MINIMAX_BACKEND`              | Backend for MiniMax models                                                              | `api` `opencode` `profile`                           | `api`                                                |
 | `CONSULT_LLM_ANTHROPIC_BACKEND`            | Backend for Anthropic models                                                            | `api` `profile` `claude-cli` `cursor-cli`            | `api`                                                |
-| `CONSULT_LLM_GROK_BACKEND`                 | Backend for Grok models                                                                 | `api` `cursor-cli` `profile`                         | `api`                                                |
+| `CONSULT_LLM_GROK_BACKEND`                 | Backend for Grok models                                                                 | `api` `grok-cli` `cursor-cli` `profile`              | `api`                                                |
 | `CONSULT_LLM_ZAI_BACKEND`                  | Backend for Z.AI (GLM) models                                                           | `api` `profile`                                      | `api`                                                |
 | `CONSULT_LLM_OPENROUTER_BACKEND`           | Backend for OpenRouter models                                                           | `api` `opencode` `profile`                           | `api`                                                |
 | `CONSULT_LLM_ALLOWED_MODELS`               | Comma-separated allowlist; restricts which models are enabled                           | model IDs                                            | all                                                  |
@@ -868,6 +886,7 @@ Environment variables override config file values.
 | `CONSULT_LLM_CODEX_REASONING_EFFORT`       | Reasoning effort for Codex CLI backend                                                  | `none` `minimal` `low` `medium` `high` `xhigh`       | `high`                                               |
 | `CONSULT_LLM_CODEX_EXTRA_ARGS`             | Extra CLI args appended to `codex exec` (shell-quoted)                                  | e.g. `--dangerously-bypass-approvals-and-sandbox`    |                                                      |
 | `CONSULT_LLM_GEMINI_EXTRA_ARGS`            | Extra CLI args appended to `gemini` (shell-quoted)                                      | shell-quoted args                                    |                                                      |
+| `CONSULT_LLM_GROK_EXTRA_ARGS`              | Extra CLI args appended to `grok` (shell-quoted)                                        | shell-quoted args                                    |                                                      |
 | `CONSULT_LLM_CLAUDE_REASONING_EFFORT`      | Reasoning effort for native Claude CLI backend                                          | `low` `medium` `high` `xhigh` `max`                  | unset                                                |
 | `CONSULT_LLM_OPENROUTER_REASONING_EFFORT`  | Reasoning effort for OpenRouter reasoning models                                        | `low` `medium` `high`                                | unset                                                |
 | `CONSULT_LLM_CLAUDE_EXTRA_ARGS`            | Extra CLI args appended to `claude` (shell-quoted)                                      | shell-quoted args                                    |                                                      |
