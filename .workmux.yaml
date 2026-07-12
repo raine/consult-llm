@@ -2,7 +2,3 @@ panes:
   - command: <agent>
     focus: true
   - split: horizontal
-files:
-  symlink:
-    - history
-    - hooks
