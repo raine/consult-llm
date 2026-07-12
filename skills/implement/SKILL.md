@@ -1,10 +1,10 @@
 ---
 name: implement
-description: One-unit implementation workflow using presets. It writes a compact note or rich code-bearing plan, optionally consults external LLMs, optionally delegates execution to sideagent, verifies, commits, and summarizes.
+description: One-unit implementation workflow using presets. It writes a compact note or rich code-bearing plan, optionally consults external LLMs, implements directly, verifies, commits, and summarizes.
 allowed-tools: Bash, Glob, Grep, Read, Edit, Write
 ---
 
-Implement one bounded unit of work. Optimize for cheap execution by doing enough reasoning before edits that the executor can follow concrete instructions instead of inventing design, APIs, tests, or control flow.
+Implement one bounded unit of work. Optimize for cheap execution by doing enough reasoning before edits that implementation can follow concrete instructions instead of inventing design, APIs, tests, or control flow.
 
 ## Argument handling
 
@@ -15,7 +15,6 @@ Parse these flags before starting:
 - `--preset light|standard|design|strict`: workflow preset. Default: `standard`.
 - `--planning note|rich|consult-first`: override compiled planning mode.
 - `--plan-review none|narrow|full`: override compiled plan review mode.
-- `--executor self|sideagent`: override compiled executor.
 - `--verification light|full`: override compiled verification.
 - `--parent-plan <path>`: path to a master plan or phase brief.
 - `--reviewer <selector>`: reviewer selector for consult-llm. Repeatable.
@@ -32,22 +31,18 @@ Preset compilation:
 light:
   planning: note
   plan_review: none
-  executor: self
   verification: light
 standard:
   planning: rich
   plan_review: narrow
-  executor: sideagent
   verification: light
 design:
   planning: consult-first
   plan_review: full
-  executor: sideagent
   verification: light
 strict:
   planning: rich
   plan_review: full
-  executor: sideagent
   verification: full
 ```
 
@@ -113,7 +108,7 @@ For `planning: note`, write a compact implementation note:
 
 **Goal:** <one sentence>
 **Preset:** light
-**Compiled fields:** planning=note, plan_review=none, executor=self, verification=light
+**Compiled fields:** planning=note, plan_review=none, verification=light
 **Parent plan:** <path or n/a>
 **Start commit:** <sha>
 **Validation:** `<command>`
@@ -138,7 +133,7 @@ For `planning: rich`, research first and write a rich code-bearing plan:
 
 **Goal:** <one sentence>
 **Preset:** standard | design | strict
-**Compiled fields:** planning=<mode>, plan_review=<mode>, executor=<mode>, verification=<mode>
+**Compiled fields:** planning=<mode>, plan_review=<mode>, verification=<mode>
 **Parent plan:** <path or n/a>
 **Start commit:** <sha>
 **Approach:** <2-3 sentences>
@@ -286,9 +281,7 @@ Do not create a large feedback ledger.
 
 ## Phase D: execute
 
-### Self execution
-
-For `executor: self`, implement directly from the note or plan.
+Implement directly from the note or plan.
 
 Rules:
 
@@ -297,54 +290,10 @@ Rules:
 - Stop if the note or plan is wrong or underspecified in a way that changes scope.
 - Make small obvious corrections directly and update the note or plan.
 - Do not overwrite user changes.
-
-### Sideagent execution
-
-For `executor: sideagent`, pass the execution prompt directly to `sideagent` on stdin. Do not write the sideagent prompt to `history/` or any other file. If the exact sideagent profile is unspecified, use the configured default profile. Do not invent a profile.
-
-Prompt format:
-
-```markdown
-# Sideagent Execution Prompt
-
-You are executing one bounded implementation plan in this repository.
-
-## Instructions
-
-- Follow the plan exactly unless it is wrong or unsafe.
-- Implement tasks in order.
-- Follow test-first steps when present.
-- Keep scope to this phase only.
-- If a small correction is obvious, update the plan directly and continue.
+- Keep scope to this unit only.
 - If a correction changes design or scope, stop and report the blocker.
-- Do not ask the user questions.
-- Do not overwrite user changes.
-- Run the validation commands.
 - Do not stage or commit `history/` artifacts.
-- Write the result sentinel described below only when `--parent-plan` is provided or the caller explicitly requests one.
-
-## Task
-
-<task statement>
-
-## Plan
-
-<plan path>
-
-## Parent context
-
-<parent plan path or n/a>
-
-## Result sentinel
-
-When `--parent-plan` is provided or the caller explicitly requests one, write the requested result sentinel with the sentinel format from the plan. For standalone `/implement` runs, do not write a result sentinel.
-```
-
-Load the `sideagent` skill before invoking sideagent. Follow that skill's current invocation contract. Use the configured default profile unless the user or local configuration names a specific profile. Do not invent a profile.
-
-Use sideagent for the initial implementation pass only. If the worktree already contains a substantial implementation diff for this unit, do not invoke sideagent again for review feedback, validation fixes, or minor plan amendments. The host agent owns those follow-up edits manually. Inspect the existing diff, apply localized fixes, and validate.
-
-If sideagent fails, inspect its output. Fix only local and obvious issues. Otherwise stop and summarize the blocker.
+- Write the result sentinel only when `--parent-plan` is provided or the caller explicitly requests one.
 
 ## Phase E: validate and verify
 
@@ -380,7 +329,6 @@ status: success | blocked | failed
 preset: light | standard | design | strict
 planning: note | rich | consult-first
 plan_review: none | narrow | full
-executor: self | sideagent
 verification: light | full
 start_commit: <sha>
 end_commit: <sha or pending>
@@ -422,7 +370,6 @@ After committing, print the final summary:
 - Preset: <preset>
 - Plan or note: `<path>`
 - Review: <none | narrow passed | full passed | blocker>
-- Executor: <self | sideagent>
 - Validation: `<command>` <passed | failed | skipped>
 - Verification: <light | full> <passed | failed>
 - Commit: `<sha>`

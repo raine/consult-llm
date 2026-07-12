@@ -43,22 +43,18 @@ Preset compilation:
 light:
   planning: note
   plan_review: none
-  executor: self
   verification: light
 standard:
   planning: rich
   plan_review: narrow
-  executor: sideagent
   verification: light
 design:
   planning: consult-first
   plan_review: full
-  executor: sideagent
   verification: light
 strict:
   planning: rich
   plan_review: full
-  executor: sideagent
   verification: full
 ```
 
@@ -151,7 +147,6 @@ phases:
       - "Given a valid request, when the API is called, then it returns the new response shape."
     planning: consult-first
     plan_review: full
-    executor: sideagent
     verification: light
 ```
 
@@ -180,7 +175,6 @@ Optional compiled-field overrides:
 
 - `planning`: `note`, `rich`, or `consult-first`
 - `plan_review`: `none`, `narrow`, or `full`
-- `executor`: `self` or `sideagent`
 - `verification`: `light` or `full`
 - `validation`: phase-specific validation command
 
@@ -276,7 +270,7 @@ You are implementing one phase in a workmux worktree.
 
 Run this implementation workflow:
 
-`/implement --preset <preset> --planning <planning> --plan-review <plan_review> --executor <executor> --verification <verification> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
+`/implement --preset <preset> --planning <planning> --plan-review <plan_review> --verification <verification> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
 
 If the local command interface does not accept compiled-field flags, include the compiled fields in the implementation request and keep the preset as the primary interface.
 
@@ -286,7 +280,7 @@ If the local command interface does not accept compiled-field flags, include the
 - Description: <description>
 - Paths: <paths>
 - Preset: `<preset>`
-- Compiled fields: planning=<planning>, plan_review=<plan_review>, executor=<executor>, verification=<verification>
+- Compiled fields: planning=<planning>, plan_review=<plan_review>, verification=<verification>
 - Master plan: `<path>`
 - Dependencies: <dependencies>
 
@@ -310,7 +304,6 @@ phase_id: <phase-id>
 preset: light | standard | design | strict
 planning: note | rich | consult-first
 plan_review: none | narrow | full
-executor: self | sideagent
 verification: light | full
 worktree: <workmux worktree name>
 base_commit: <sha>
