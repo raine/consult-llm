@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.24 (2026-07-12)
+
+- Added Grok CLI backend with multi-turn conversations, file context, streamed reasoning, and configurable extra arguments.
+
 ## v3.0.23 (2026-07-10)
 
 - Added GPT-5.6 Sol support, with the `openai` selector preferring it when available.
