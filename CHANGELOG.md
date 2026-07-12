@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.26 (2026-07-12)
+
+- Grok CLI consultations now report accurate prompt and completion token usage.
+
 ## v3.0.25 (2026-07-12)
 
 - Grok CLI and API backends now support configurable `low`, `medium`, or `high` reasoning effort.
