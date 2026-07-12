@@ -1,6 +1,6 @@
 ---
 name: implement
-description: One-unit implementation workflow using presets. It writes a compact note or rich code-bearing plan, optionally consults external LLMs, implements directly, verifies, commits, and summarizes.
+description: Explicit preset-driven implementation workflow. Use only when the user invokes `/implement` or another skill explicitly delegates to it. Do not trigger for ordinary coding requests, straightforward follow-up edits, fixes with an established design, or requests to amend an existing commit.
 allowed-tools: Bash, Glob, Grep, Read, Edit, Write
 ---
 
