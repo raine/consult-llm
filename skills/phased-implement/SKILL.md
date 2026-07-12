@@ -267,10 +267,6 @@ You are implementing one phase in a workmux worktree.
 ## Hard rules
 
 - Work only on this phase.
-- Do not modify the master plan.
-- Do not use plan mode.
-- Do not use em dashes.
-- Do not overwrite user changes.
 - Invoke `/implement` for this phase with the resolved preset and phase context.
 - Preserve the phase boundaries, acceptance criteria, and dependencies below.
 - Commit successful changes in the phase worktree.
