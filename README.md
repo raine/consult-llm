@@ -504,9 +504,7 @@ the preferred built-in Grok model:
 consult-llm config set grok.backend grok-cli
 consult-llm config set allowed_models '[grok-4.5]'
 consult-llm config set default_model grok-4.5
-
-# Optional: append extra args to every Grok CLI invocation. Shell-quoted.
-consult-llm config set grok.extra_args '--reasoning-effort high'
+consult-llm config set grok.reasoning_effort high
 ```
 
 The backend uses the CLI's headless streaming JSON mode and preserves session
@@ -886,6 +884,7 @@ Environment variables override config file values.
 | `CONSULT_LLM_CODEX_REASONING_EFFORT`       | Reasoning effort for Codex CLI backend                                                  | `none` `minimal` `low` `medium` `high` `xhigh`       | `high`                                               |
 | `CONSULT_LLM_CODEX_EXTRA_ARGS`             | Extra CLI args appended to `codex exec` (shell-quoted)                                  | e.g. `--dangerously-bypass-approvals-and-sandbox`    |                                                      |
 | `CONSULT_LLM_GEMINI_EXTRA_ARGS`            | Extra CLI args appended to `gemini` (shell-quoted)                                      | shell-quoted args                                    |                                                      |
+| `CONSULT_LLM_GROK_REASONING_EFFORT`        | Reasoning effort for Grok CLI and API backends                                          | `low` `medium` `high`                                | unset                                                |
 | `CONSULT_LLM_GROK_EXTRA_ARGS`              | Extra CLI args appended to `grok` (shell-quoted)                                        | shell-quoted args                                    |                                                      |
 | `CONSULT_LLM_CLAUDE_REASONING_EFFORT`      | Reasoning effort for native Claude CLI backend                                          | `low` `medium` `high` `xhigh` `max`                  | unset                                                |
 | `CONSULT_LLM_OPENROUTER_REASONING_EFFORT`  | Reasoning effort for OpenRouter reasoning models                                        | `low` `medium` `high`                                | unset                                                |

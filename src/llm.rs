@@ -105,6 +105,7 @@ impl ExecutorProvider {
                 cfg.env_for(provider).clone(),
             )),
             Backend::GrokCli => Arc::new(GrokCliExecutor::new(
+                cfg.reasoning_effort_for(provider).map(str::to_string),
                 cfg.grok_extra_args.clone(),
                 cfg.env_for(provider).clone(),
             )),
@@ -233,6 +234,20 @@ mod tests {
             .get_executor("grok-4.5")
             .expect("should create grok cli executor");
         assert_eq!(executor.backend_name(), "grok_cli");
+    }
+
+    #[test]
+    fn test_grok_cli_executor_uses_configured_effort() {
+        let env = env_from(&[
+            ("CONSULT_LLM_GROK_BACKEND", "grok-cli"),
+            ("CONSULT_LLM_GROK_REASONING_EFFORT", "high"),
+        ]);
+        let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
+        let provider = ExecutorProvider::new(Arc::new(config));
+        let executor = provider
+            .get_executor("grok-4.5")
+            .expect("should create grok cli executor");
+        assert_eq!(executor.reasoning_effort("grok-4.5"), Some("high"));
     }
 
     #[test]

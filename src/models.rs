@@ -296,7 +296,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         allowed_backends: &["api", "grok-cli", "cursor-cli", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_GROK_PROVIDER",
         default_opencode_provider: "xai",
-        reasoning_effort_env: None,
+        reasoning_effort_env: Some("CONSULT_LLM_GROK_REASONING_EFFORT"),
         extra_args_env: Some("CONSULT_LLM_GROK_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_GROK_CLI_PROFILE",
     },
@@ -570,7 +570,7 @@ mod tests {
                 assert!(!env.is_empty());
                 assert!(matches!(
                     spec.provider,
-                    Provider::OpenAI | Provider::Anthropic | Provider::OpenRouter
+                    Provider::OpenAI | Provider::Anthropic | Provider::Grok | Provider::OpenRouter
                 ));
             }
             if let Some(env) = spec.extra_args_env {

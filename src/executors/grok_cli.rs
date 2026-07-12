@@ -4,18 +4,24 @@ use super::{append_file_refs, prepare_cli_request, run_cli_executor_with_env};
 
 pub struct GrokCliExecutor {
     capabilities: LlmExecutorCapabilities,
+    reasoning_effort: Option<String>,
     extra_args: Vec<String>,
     env: std::collections::BTreeMap<String, String>,
 }
 
 impl GrokCliExecutor {
-    pub fn new(extra_args: Vec<String>, env: std::collections::BTreeMap<String, String>) -> Self {
+    pub fn new(
+        reasoning_effort: Option<String>,
+        extra_args: Vec<String>,
+        env: std::collections::BTreeMap<String, String>,
+    ) -> Self {
         Self {
             capabilities: LlmExecutorCapabilities {
                 is_cli: true,
                 supports_threads: true,
                 supports_file_refs: true,
             },
+            reasoning_effort,
             extra_args,
             env,
         }
@@ -66,6 +72,10 @@ impl LlmExecutor for GrokCliExecutor {
         "grok_cli"
     }
 
+    fn reasoning_effort(&self, _model: &str) -> Option<&str> {
+        self.reasoning_effort.as_deref()
+    }
+
     fn execute(&self, req: ExecutionRequest) -> anyhow::Result<ExecuteResult> {
         let prepared = prepare_cli_request(req, append_file_refs);
         let mut args = vec![
@@ -81,6 +91,11 @@ impl LlmExecutor for GrokCliExecutor {
         if let Some(thread_id) = prepared.thread_id.as_deref() {
             args.push("--resume".to_string());
             args.push(thread_id.to_string());
+        }
+
+        if let Some(effort) = &self.reasoning_effort {
+            args.push("--reasoning-effort".to_string());
+            args.push(effort.clone());
         }
 
         args.extend(self.extra_args.iter().cloned());
