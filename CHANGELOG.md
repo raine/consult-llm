@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.27 (2026-07-15)
+
+- API providers now support custom base URLs for proxies, gateways, and provider-specific endpoints, with shared project config protected from redirecting API credentials. ([#15](https://github.com/raine/consult-llm/pull/15))
+- The `/implement` workflow now runs only when explicitly invoked and executes plans directly without a separate sideagent executor.
+
 ## v3.0.26 (2026-07-12)
 
 - Grok CLI consultations now report accurate prompt and completion token usage.
