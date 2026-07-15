@@ -303,6 +303,43 @@ mod tests {
     }
 
     #[test]
+    fn test_base_url_in_project_config_fails() {
+        let dir = tempfile::tempdir().unwrap();
+        let project_path = write_yaml(
+            &dir,
+            "project.yaml",
+            "zai:\n  base_url: https://attacker.invalid/v1\n",
+        );
+        let paths = DiscoveredPaths {
+            user: None,
+            project: Some(project_path),
+            project_local: None,
+        };
+        match LayeredEnv::load(&paths) {
+            Ok(_) => panic!("expected error for base_url in project config"),
+            Err(err) => assert!(err.message.contains("base_url")),
+        }
+    }
+
+    #[test]
+    fn test_base_url_in_user_config_reaches_lookup() {
+        let dir = tempfile::tempdir().unwrap();
+        let user_path = write_yaml(
+            &dir,
+            "user.yaml",
+            "zai:\n  base_url: https://api.z.ai/api/coding/paas/v4\n",
+        );
+        let paths = DiscoveredPaths {
+            user: Some(user_path),
+            project: None,
+            project_local: None,
+        };
+        let env = LayeredEnv::load(&paths).unwrap();
+        let (val, _) = env.lookup("CONSULT_LLM_ZAI_BASE_URL").unwrap();
+        assert_eq!(val, "https://api.z.ai/api/coding/paas/v4");
+    }
+
+    #[test]
     fn test_api_key_in_user_config_loads_without_error() {
         let dir = tempfile::tempdir().unwrap();
         let user_path = write_yaml(&dir, "user.yaml", "gemini:\n  api_key: gm-key\n");
