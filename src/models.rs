@@ -91,6 +91,9 @@ pub struct ProviderSpec {
     pub selector_priorities: &'static [&'static str],
     /// Env var for the API key (e.g. "OPENAI_API_KEY").
     pub api_key_env: &'static str,
+    /// Env var that overrides `api_base_url` for the `api` backend
+    /// (e.g. "CONSULT_LLM_OPENAI_BASE_URL").
+    pub base_url_env: &'static str,
     /// Prefixed backend env var (e.g. "CONSULT_LLM_OPENAI_BACKEND").
     pub backend_env: &'static str,
     /// Legacy unprefixed backend env var, if any (e.g. "OPENAI_BACKEND").
@@ -155,6 +158,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
             "gemini-2.5-pro",
         ],
         api_key_env: "GEMINI_API_KEY",
+        base_url_env: "CONSULT_LLM_GEMINI_BASE_URL",
         backend_env: "CONSULT_LLM_GEMINI_BACKEND",
         legacy_backend_env: Some("GEMINI_BACKEND"),
         legacy_mode_env: Some("GEMINI_MODE"),
@@ -179,6 +183,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["deepseek-v4-pro"],
         selector_priorities: &["deepseek-v4-pro"],
         api_key_env: "DEEPSEEK_API_KEY",
+        base_url_env: "CONSULT_LLM_DEEPSEEK_BASE_URL",
         backend_env: "CONSULT_LLM_DEEPSEEK_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
@@ -217,6 +222,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
             "gpt-5.2-codex",
         ],
         api_key_env: "OPENAI_API_KEY",
+        base_url_env: "CONSULT_LLM_OPENAI_BASE_URL",
         backend_env: "CONSULT_LLM_OPENAI_BACKEND",
         legacy_backend_env: Some("OPENAI_BACKEND"),
         legacy_mode_env: Some("OPENAI_MODE"),
@@ -244,6 +250,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["MiniMax-M2.7"],
         selector_priorities: &["MiniMax-M2.7"],
         api_key_env: "MINIMAX_API_KEY",
+        base_url_env: "CONSULT_LLM_MINIMAX_BASE_URL",
         backend_env: "CONSULT_LLM_MINIMAX_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
@@ -265,6 +272,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["claude-opus-4-7"],
         selector_priorities: &["claude-opus-4-7"],
         api_key_env: "ANTHROPIC_API_KEY",
+        base_url_env: "CONSULT_LLM_ANTHROPIC_BASE_URL",
         backend_env: "CONSULT_LLM_ANTHROPIC_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
@@ -289,6 +297,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["grok-4.5", "grok-4.3"],
         selector_priorities: &["grok-4.5", "grok-4.3"],
         api_key_env: "XAI_API_KEY",
+        base_url_env: "CONSULT_LLM_GROK_BASE_URL",
         backend_env: "CONSULT_LLM_GROK_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
@@ -313,6 +322,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["openrouter/auto"],
         selector_priorities: &["openrouter/auto"],
         api_key_env: "OPENROUTER_API_KEY",
+        base_url_env: "CONSULT_LLM_OPENROUTER_BASE_URL",
         backend_env: "CONSULT_LLM_OPENROUTER_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,
@@ -337,6 +347,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &["glm-5.2"],
         selector_priorities: &["glm-5.2"],
         api_key_env: "ZAI_API_TOKEN",
+        base_url_env: "CONSULT_LLM_ZAI_BASE_URL",
         backend_env: "CONSULT_LLM_ZAI_BACKEND",
         legacy_backend_env: None,
         legacy_mode_env: None,

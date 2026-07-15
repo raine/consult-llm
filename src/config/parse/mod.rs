@@ -101,6 +101,7 @@ pub(super) mod test_helpers {
                     *p,
                     ProviderRuntimeConfig {
                         api_key: key.map(|k| k.to_string()),
+                        base_url: None,
                         backend: backend.clone(),
                         opencode_provider: String::new(),
                         reasoning_effort: None,

@@ -76,7 +76,7 @@ impl ExecutorProvider {
                 let key = cfg.api_key_for(provider).ok_or_else(|| {
                     anyhow::anyhow!("API key is required for {provider:?} models in API mode")
                 })?;
-                let base = provider.api_base_url().map(|s| s.to_string());
+                let base = cfg.api_base_url_for(provider).map(|s| s.to_string());
                 let idle_timeout = self.idle_timeout;
                 match provider.api_protocol() {
                     ApiProtocol::OpenAiCompat(runtime) => Arc::new(ApiExecutor::new(

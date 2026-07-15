@@ -90,6 +90,11 @@ fn parse_provider_config(
     // 3. API key
     let api_key = env(spec.api_key_env);
 
+    // 3b. API base URL override
+    let base_url = env(spec.base_url_env)
+        .map(|v| v.trim().to_string())
+        .filter(|v| !v.is_empty());
+
     // 4. OpenCode provider prefix
     let opencode_provider = env(spec.opencode_env)
         .or_else(|| opencode_global.clone())
@@ -130,6 +135,7 @@ fn parse_provider_config(
 
     Ok(ProviderRuntimeConfig {
         api_key,
+        base_url,
         backend,
         opencode_provider,
         reasoning_effort,
@@ -284,6 +290,45 @@ mod tests {
                 spec.provider
             );
         }
+    }
+
+    #[test]
+    fn test_base_url_override_from_env() {
+        let env = env_from(&[
+            ("ZAI_API_TOKEN", "zai-key"),
+            (
+                "CONSULT_LLM_ZAI_BASE_URL",
+                "https://api.z.ai/api/coding/paas/v4",
+            ),
+        ]);
+        let (config, _) = parse_config(env).unwrap();
+        assert_eq!(
+            config.api_base_url_for(Provider::Zai),
+            Some("https://api.z.ai/api/coding/paas/v4")
+        );
+    }
+
+    #[test]
+    fn test_base_url_defaults_to_registry() {
+        let env = env_from(&[("ZAI_API_TOKEN", "zai-key")]);
+        let (config, _) = parse_config(env).unwrap();
+        assert_eq!(
+            config.api_base_url_for(Provider::Zai),
+            Some("https://api.z.ai/api/paas/v4")
+        );
+    }
+
+    #[test]
+    fn test_whitespace_base_url_treated_as_unset() {
+        let env = env_from(&[
+            ("ZAI_API_TOKEN", "zai-key"),
+            ("CONSULT_LLM_ZAI_BASE_URL", "   "),
+        ]);
+        let (config, _) = parse_config(env).unwrap();
+        assert_eq!(
+            config.api_base_url_for(Provider::Zai),
+            Some("https://api.z.ai/api/paas/v4")
+        );
     }
 
     #[test]

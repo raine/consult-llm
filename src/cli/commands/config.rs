@@ -201,6 +201,26 @@ mod tests {
     }
 
     #[test]
+    fn test_set_base_url_round_trips() {
+        let mut doc = mapping();
+        set_nested_key(
+            &mut doc,
+            "zai.base_url",
+            Value::String("https://api.z.ai/api/coding/paas/v4".into()),
+        )
+        .unwrap();
+        let out = serde_yaml::to_string(&doc).unwrap();
+        let cfg = ConfigFile::parse(&out).unwrap();
+        let m = cfg
+            .to_env_map(crate::config::file::ApiKeyPolicy::Allow)
+            .unwrap();
+        assert_eq!(
+            m["CONSULT_LLM_ZAI_BASE_URL"],
+            "https://api.z.ai/api/coding/paas/v4"
+        );
+    }
+
+    #[test]
     fn test_validate_key_rejects_empty_segments() {
         assert!(validate_key_path("").is_err());
         assert!(validate_key_path("gemini..backend").is_err());

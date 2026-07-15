@@ -51,6 +51,7 @@ impl Backend {
 #[derive(Debug, Clone)]
 pub struct ProviderRuntimeConfig {
     pub api_key: Option<String>,
+    pub base_url: Option<String>,
     pub backend: Backend,
     pub opencode_provider: String,
     pub reasoning_effort: Option<String>,
@@ -189,6 +190,15 @@ impl Config {
     /// Get the API key for a provider (when using API backend).
     pub fn api_key_for(&self, provider: Provider) -> Option<&str> {
         self.providers[&provider].api_key.as_deref()
+    }
+
+    /// API base URL for a provider: the configured override when set,
+    /// otherwise the registry default (when using API backend).
+    pub fn api_base_url_for(&self, provider: Provider) -> Option<&str> {
+        self.providers[&provider]
+            .base_url
+            .as_deref()
+            .or_else(|| provider.api_base_url())
     }
 
     /// Get the OpenCode provider prefix for a provider family.

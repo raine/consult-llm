@@ -46,6 +46,10 @@ pub struct ProviderBlock {
     pub opencode_provider: Option<String>,
     pub reasoning_effort: Option<String>,
     pub api_key: Option<String>,
+    /// Override the API base URL for the `api` backend (e.g. the z.ai
+    /// coding-plan endpoint or a local proxy). Not allowed in the committed
+    /// project config because it controls where API credentials are sent.
+    pub base_url: Option<String>,
     /// Extra environment variables passed to the selected backend process or API transport.
     #[serde(default)]
     pub env: BTreeMap<String, String>,
@@ -77,6 +81,8 @@ pub enum ApiKeyPolicy {
 pub enum ProjectConfigPolicyError {
     /// An API key was set in the project config.
     ApiKey { provider: &'static str },
+    /// A base_url override was set in a provider block in the project config.
+    BaseUrl { provider: &'static str },
     /// A literal env value was set in a provider block in the project config.
     ProviderEnv { provider: &'static str },
     /// A literal env value was set in a CLI profile in the project config.
@@ -91,6 +97,15 @@ impl std::fmt::Display for ProjectConfigPolicyError {
                     f,
                     "API keys are not allowed in the shared project config (.consult-llm.yaml). \
                      Move `{}.api_key` to .consult-llm.local.yaml or ~/.config/consult-llm/config.yaml.",
+                    provider
+                )
+            }
+            ProjectConfigPolicyError::BaseUrl { provider } => {
+                write!(
+                    f,
+                    "base_url overrides are not allowed in the shared project config (.consult-llm.yaml) \
+                     because they control where API credentials are sent. \
+                     Move `{}.base_url` to .consult-llm.local.yaml or ~/.config/consult-llm/config.yaml.",
                     provider
                 )
             }
@@ -355,6 +370,17 @@ impl ConfigFile {
                 // blank/whitespace-only: silently skip (treat as unset)
             }
 
+            if let Some(v) = &block.base_url {
+                let trimmed = v.trim();
+                if !trimmed.is_empty() {
+                    if policy == ApiKeyPolicy::Forbid {
+                        return Err(ProjectConfigPolicyError::BaseUrl { provider: spec.id });
+                    }
+                    m.insert(spec.base_url_env.to_string(), trimmed.to_string());
+                }
+                // blank/whitespace-only: silently skip (treat as unset)
+            }
+
             if policy == ApiKeyPolicy::Forbid && !block.env.is_empty() {
                 return Err(ProjectConfigPolicyError::ProviderEnv { provider: spec.id });
             }
@@ -584,6 +610,7 @@ openrouter:
 zai:
   backend: profile
   cli_profile: claude-zai
+  base_url: https://api.z.ai/api/coding/paas/v4
 "#;
         let cfg = ConfigFile::parse(yaml).expect("parses");
         assert_eq!(cfg.providers.len(), 8);
@@ -647,6 +674,57 @@ zai:
 
         // Opencode global default.
         assert_eq!(m["CONSULT_LLM_OPENCODE_PROVIDER"], "copilot");
+
+        // base_url override lands at the spec-declared env name.
+        assert_eq!(
+            m["CONSULT_LLM_ZAI_BASE_URL"],
+            "https://api.z.ai/api/coding/paas/v4"
+        );
+    }
+
+    #[test]
+    fn test_base_url_maps_to_env() {
+        let cfg = cfg_with(vec![(
+            Provider::Zai,
+            ProviderBlock {
+                base_url: Some("https://api.z.ai/api/coding/paas/v4".into()),
+                ..Default::default()
+            },
+        )]);
+        let m = cfg.to_env_map(ApiKeyPolicy::Allow).unwrap();
+        assert_eq!(
+            m["CONSULT_LLM_ZAI_BASE_URL"],
+            "https://api.z.ai/api/coding/paas/v4"
+        );
+    }
+
+    #[test]
+    fn test_blank_base_url_skipped() {
+        let cfg = cfg_with(vec![(
+            Provider::Zai,
+            ProviderBlock {
+                base_url: Some("   ".into()),
+                ..Default::default()
+            },
+        )]);
+        let m = cfg.to_env_map(ApiKeyPolicy::Allow).unwrap();
+        assert!(!m.contains_key("CONSULT_LLM_ZAI_BASE_URL"));
+    }
+
+    #[test]
+    fn test_base_url_rejected_in_project_layer() {
+        let cfg = cfg_with(vec![(
+            Provider::Zai,
+            ProviderBlock {
+                base_url: Some("https://attacker.invalid/v1".into()),
+                ..Default::default()
+            },
+        )]);
+        let err = cfg.to_env_map(ApiKeyPolicy::Forbid).unwrap_err();
+        assert!(matches!(
+            err,
+            ProjectConfigPolicyError::BaseUrl { provider } if provider == "zai"
+        ));
     }
 
     #[test]

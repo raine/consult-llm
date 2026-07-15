@@ -463,6 +463,22 @@ consult-llm config set openai.backend api
 consult-llm config set grok.backend api
 ```
 
+#### Custom base URL
+
+Any provider's API endpoint can be overridden with `base_url` (or the
+provider's `CONSULT_LLM_<PROVIDER>_BASE_URL` environment variable). Useful for
+proxies, gateways, and plan-specific endpoints. Not allowed in the committed
+project config (`.consult-llm.yaml`) because it controls where API credentials
+are sent.
+
+For example, Z.AI coding-plan subscription keys only work against the coding
+endpoint:
+
+```bash
+consult-llm config set zai.api_key your_zai_coding_plan_key
+consult-llm config set zai.base_url https://api.z.ai/api/coding/paas/v4
+```
+
 ### CLI backends
 
 Shell out to an already-installed local CLI. No API keys needed in `consult-llm`; authentication is handled by the CLI tool.
@@ -869,6 +885,7 @@ Environment variables override config file values.
 | `OPENROUTER_API_KEY`                       | OpenRouter API key                                                                      |                                                      |                                                      |
 | `XAI_API_KEY`                              | xAI API key for Grok models                                                             |                                                      |                                                      |
 | `ZAI_API_TOKEN`                            | Z.AI API key for GLM models                                                             |                                                      |                                                      |
+| `CONSULT_LLM_<PROVIDER>_BASE_URL`          | Override the API base URL for a provider's `api` backend (e.g. `CONSULT_LLM_ZAI_BASE_URL` for the Z.AI coding-plan endpoint) | URL                                                  | registry default                                     |
 | `CONSULT_LLM_DEFAULT_MODEL`                | Model or selector to use for single-response calls when `-m` is omitted                 | selector or exact model ID                           | first available                                      |
 | `CONSULT_LLM_DEFAULT_MODELS`               | Comma-separated ordered multi-model defaults when `-m` is omitted; duplicates preserved | selectors or exact model IDs                         | empty (falls through to default_model then fallback) |
 | `CONSULT_LLM_GEMINI_BACKEND`               | Backend for Gemini models                                                               | `api` `gemini-cli` `cursor-cli` `opencode` `profile` | `api`                                                |

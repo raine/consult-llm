@@ -218,6 +218,7 @@ fn config_keys() -> Vec<&'static str> {
     ];
     for spec in PROVIDERS {
         keys.push(spec.backend_env);
+        keys.push(spec.base_url_env);
         keys.push(spec.cli_profile_env);
         keys.push(spec.opencode_env);
         if let Some(env) = spec.reasoning_effort_env {
@@ -244,6 +245,9 @@ fn semantic_name(env_key: &str) -> String {
             for spec in PROVIDERS {
                 if k == spec.backend_env {
                     return format!("{}.backend", spec.id);
+                }
+                if k == spec.base_url_env {
+                    return format!("{}.base_url", spec.id);
                 }
                 if k == spec.cli_profile_env {
                     return format!("{}.cli_profile", spec.id);
