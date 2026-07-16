@@ -78,7 +78,6 @@ impl LlmExecutor for ClaudeCliExecutor {
             ("-p", None),
             ("--output-format", Some(output_format)),
             ("--verbose", None),
-            ("--bare", None),
         ];
         for (flag, value) in boilerplate_flags {
             // Always inject --output-format to ensure the parser and CLI agree
@@ -768,6 +767,27 @@ mod tests {
             .execute(request("", "system: test"))
             .expect("execute");
         assert_eq!(result.response.trim(), "env-value");
+    }
+
+    #[test]
+    fn executor_does_not_inject_bare_mode() {
+        let profile = make_config(
+            "sh",
+            vec![
+                "-c".to_string(),
+                "printf '%s\\n' \"$@\"".to_string(),
+                "sh".to_string(),
+            ],
+            std::collections::BTreeMap::new(),
+            CliPromptMode::Stdin,
+            None,
+        );
+        let executor = ClaudeCliExecutor::new(profile);
+        let result = executor
+            .execute(request("", "system: test"))
+            .expect("execute");
+        assert!(result.response.contains("--verbose"));
+        assert!(!result.response.contains("--bare"));
     }
 
     #[test]

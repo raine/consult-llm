@@ -587,7 +587,7 @@ gemini:
 
 `model_env` sets the named environment variable to the requested model ID before launching the profile command. For Anthropic models, use `anthropic.backend: profile` when selecting a named CLI profile. Existing configs that combine `anthropic.backend: claude-cli` with `anthropic.cli_profile` are treated as profile-backed for backward compatibility, but new configs should use `profile` explicitly.
 
-> Fields like `type: claude-cli`, `command: claude`, `interface: stream-json`, `prompt: stdin` and flags like `-p`, `--output-format stream-json`, `--verbose`, `--bare` are defaulted or auto-injected for `claude-cli` profiles. Only non-default choices need to be written. See [CLI backend profiles](#cli-backend-profiles) below.
+> Fields like `type: claude-cli`, `command: claude`, `interface: stream-json`, `prompt: stdin` and flags like `-p`, `--output-format stream-json`, `--verbose` are defaulted or auto-injected for `claude-cli` profiles. Only non-default choices need to be written. See [CLI backend profiles](#cli-backend-profiles) below.
 
 The example passes literal environment values and arguments to the CLI process. Prefer a user or project-local config for profiles with `env` values; committed project config rejects `cli_profiles.*.env` so secrets and machine-local paths do not leak.
 
@@ -658,7 +658,7 @@ The `profile` backend selects a named entry from the top-level `cli_profiles` ma
 - `interface`: output parsing strategy (`text`, `json`, or `stream-json`; defaults to `stream-json`)
 - `prompt`: how the prompt is delivered (`stdin` or `argument`; defaults to `stdin`)
 
-For `claude-cli` profiles, the executor auto-injects `-p`, `--output-format <interface>`, `--verbose`, `--bare` and the env vars `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`, `CLAUDE_CODE_DISABLE_UPDATE_CHECK=1`, and `NO_COLOR=1`.
+For `claude-cli` profiles, the executor auto-injects `-p`, `--output-format <interface>`, `--verbose` and the env vars `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1`, `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`, `CLAUDE_CODE_DISABLE_UPDATE_CHECK=1`, and `NO_COLOR=1`.
 
 Provider blocks reference a profile by name. For example, `gemini.backend: profile` with `gemini.cli_profile: claude-gemini-proxy` uses the profile shown above. For Anthropic, prefer `anthropic.backend: claude-cli` for the stock native backend and `anthropic.backend: profile` when selecting a named profile.
 
