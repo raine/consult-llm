@@ -381,7 +381,7 @@ See the "Using web mode..." example above for a concrete transcript.
 - `DEEPSEEK_API_KEY` - Your DeepSeek API key (required for DeepSeek models)
 - `CONSULT_LLM_DEFAULT_MODEL` - Override the default model (optional)
   - Options: `gpt-5.2` (default), `gemini-2.5-pro`, `gemini-3-pro-preview`,
-    `deepseek-reasoner`, `gpt-5.3-codex`, `gpt-5.2-codex`, `gpt-5.1-codex-max`,
+    `deepseek-v4-pro`, `deepseek-v4-flash`, `gpt-5.3-codex`, `gpt-5.2-codex`, `gpt-5.1-codex-max`,
     `gpt-5.1-codex`, `gpt-5.1-codex-mini`, `gpt-5.1`
 - `GEMINI_MODE` - Choose between API or CLI mode for Gemini models (optional)
   - Options: `api` (default), `cli`
@@ -474,7 +474,7 @@ models complex questions.
 
 - **model** (optional): LLM model to use
   - Options: `gpt-5.2` (default), `gemini-2.5-pro`, `gemini-3-pro-preview`,
-    `deepseek-reasoner`, `gpt-5.3-codex`, `gpt-5.2-codex`, `gpt-5.1-codex-max`,
+    `deepseek-v4-pro`, `deepseek-v4-flash`, `gpt-5.3-codex`, `gpt-5.2-codex`, `gpt-5.1-codex-max`,
     `gpt-5.1-codex`, `gpt-5.1-codex-mini`, `gpt-5.1`
 
 - **web_mode** (optional): Copy prompt to clipboard instead of querying LLM
@@ -494,8 +494,11 @@ models complex questions.
 - **gemini-2.5-pro**: Google's Gemini 2.5 Pro ($1.25/$10 per million tokens)
 - **gemini-3-pro-preview**: Google's Gemini 3 Pro Preview ($2/$12 per million
   tokens for prompts ≤200k tokens, $4/$18 for prompts >200k tokens)
-- **deepseek-reasoner**: DeepSeek's reasoning model ($0.55/$2.19 per million
-  tokens)
+- **deepseek-v4-pro**: DeepSeek's advanced/reasoning model ($0.435/$0.87 per
+  million tokens). Replaces the retired `deepseek-reasoner` (deprecated
+  2026-07-24).
+- **deepseek-v4-flash**: DeepSeek's fast model ($0.14/$0.28 per million tokens).
+  Replaces the retired `deepseek-chat` (deprecated 2026-07-24).
 - **gpt-5.2**: OpenAI's latest GPT model
 - **gpt-5.3-codex**: OpenAI's Codex model based on GPT-5.3
 - **gpt-5.2-codex**: OpenAI's Codex model based on GPT-5.2

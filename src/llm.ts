@@ -9,7 +9,8 @@ import { logCliDebug } from './logger.js'
 const OPENROUTER_MODEL_MAP: Record<string, string> = {
   'gemini-2.5-pro': 'google/gemini-2.5-pro',
   'gemini-3-pro-preview': 'google/gemini-3-pro-preview',
-  'deepseek-reasoner': 'deepseek/deepseek-reasoner',
+  'deepseek-v4-pro': 'deepseek/deepseek-v4-pro',
+  'deepseek-v4-flash': 'deepseek/deepseek-v4-flash',
   'gpt-5.2': 'openai/gpt-5.2',
   'gpt-5.3-codex': 'openai/gpt-5.3-codex',
   'gpt-5.2-codex': 'openai/gpt-5.2-codex',

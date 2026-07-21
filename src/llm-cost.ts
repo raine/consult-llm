@@ -20,9 +20,13 @@ const MODEL_PRICING: Partial<Record<SupportedChatModel, ModelPricing>> = {
     inputCostPerMillion: 2.0,
     outputCostPerMillion: 12.0,
   },
-  'deepseek-reasoner': {
-    inputCostPerMillion: 0.55,
-    outputCostPerMillion: 2.19,
+  'deepseek-v4-pro': {
+    inputCostPerMillion: 0.435,
+    outputCostPerMillion: 0.87,
+  },
+  'deepseek-v4-flash': {
+    inputCostPerMillion: 0.14,
+    outputCostPerMillion: 0.28,
   },
 }
 

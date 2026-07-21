@@ -245,10 +245,10 @@ describe('executor selection', () => {
     createCompletionMock.mockResolvedValue({
       choices: [{ message: { content: 'deepseek' } }],
     })
-    const executor = getExecutorForModel('deepseek-reasoner')
+    const executor = getExecutorForModel('deepseek-v4-pro')
     const result = await executor.execute(
       'prompt',
-      'deepseek-reasoner',
+      'deepseek-v4-pro',
       'system',
     )
     expect(result.response).toBe('deepseek')
