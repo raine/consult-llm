@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.28 (2026-07-25)
+
+- Added Claude Opus 5 support for Anthropic API and Claude CLI backends. The `anthropic` selector now prefers Claude Opus 5 while Claude Opus 4.7 remains available.
+- Claude CLI profiles can now authenticate through Claude.ai subscriptions using the CLI's normal authentication state.
+
 ## v3.0.27 (2026-07-15)
 
 - API providers now support custom base URLs for proxies, gateways, and provider-specific endpoints, with shared project config protected from redirecting API credentials. ([#15](https://github.com/raine/consult-llm/pull/15))
