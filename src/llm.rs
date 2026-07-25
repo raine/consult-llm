@@ -206,7 +206,7 @@ mod tests {
         let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
         let provider = ExecutorProvider::new(Arc::new(config));
         let executor = provider
-            .get_executor("claude-opus-4-7")
+            .get_executor("claude-opus-5")
             .expect("should create claude cli executor");
         assert_eq!(executor.backend_name(), "claude_cli");
     }
@@ -220,9 +220,9 @@ mod tests {
         let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
         let provider = ExecutorProvider::new(Arc::new(config));
         let executor = provider
-            .get_executor("claude-opus-4-7")
+            .get_executor("claude-opus-5")
             .expect("should create claude cli executor");
-        assert_eq!(executor.reasoning_effort("claude-opus-4-7"), Some("xhigh"));
+        assert_eq!(executor.reasoning_effort("claude-opus-5"), Some("xhigh"));
     }
 
     #[test]

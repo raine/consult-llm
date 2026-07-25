@@ -223,6 +223,7 @@ mod tests {
     fn test_parse_config_with_anthropic_key() {
         let env = env_from(&[("ANTHROPIC_API_KEY", "sk-ant-test")]);
         let (config, registry) = parse_config(env).unwrap();
+        assert!(config.allowed_models.contains(&"claude-opus-5".to_string()));
         assert!(
             config
                 .allowed_models
@@ -231,7 +232,7 @@ mod tests {
         assert_eq!(config.providers[&Provider::Anthropic].backend, Backend::Api);
         assert_eq!(
             registry.resolve_model(Some("anthropic")).unwrap(),
-            "claude-opus-4-7"
+            "claude-opus-5"
         );
     }
 

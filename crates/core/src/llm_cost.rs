@@ -47,7 +47,7 @@ fn get_pricing(model: &str) -> Option<ModelPricing> {
             input_per_million: 0.30,
             output_per_million: 1.20,
         },
-        "claude-opus-4-7" => ModelPricing {
+        "claude-opus-5" | "claude-opus-4-7" => ModelPricing {
             input_per_million: 5.0,
             output_per_million: 25.0,
         },
@@ -89,6 +89,14 @@ pub fn calculate_cost(prompt_tokens: u64, completion_tokens: u64, model: &str) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn prices_claude_opus_5() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "claude-opus-5");
+        assert!((cost.input_cost - 5.0).abs() < f64::EPSILON);
+        assert!((cost.output_cost - 25.0).abs() < f64::EPSILON);
+        assert!((cost.total_cost - 30.0).abs() < f64::EPSILON);
+    }
 
     #[test]
     fn prices_openrouter_glm() {

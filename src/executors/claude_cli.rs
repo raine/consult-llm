@@ -657,7 +657,7 @@ mod tests {
     ) -> ExecutionRequest {
         ExecutionRequest {
             prompt: prompt.to_string(),
-            model: "claude-opus-4-7".to_string(),
+            model: "claude-opus-5".to_string(),
             system_prompt: system_prompt.to_string(),
             file_paths,
             thread_id: None,

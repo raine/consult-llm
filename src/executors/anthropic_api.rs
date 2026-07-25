@@ -111,7 +111,7 @@ mod tests {
     #[test]
     fn request_omits_empty_system() {
         let req = MessagesRequest {
-            model: "claude-opus-4-7".into(),
+            model: "claude-opus-5".into(),
             system: String::new(),
             messages: vec![ApiTextMessage::user("hi".into())],
             max_tokens: 1024,

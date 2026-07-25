@@ -284,6 +284,7 @@ mod tests {
                 "gpt-5.3-codex",
                 "gpt-5.2-codex",
                 "MiniMax-M2.7",
+                "claude-opus-5",
                 "claude-opus-4-7",
                 "grok-4.5",
                 "grok-4.3",
