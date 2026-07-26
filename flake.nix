@@ -20,30 +20,15 @@
           pkgs = nixpkgs.legacyPackages.${system};
         in
         {
-          default = pkgs.stdenv.mkDerivation {
+          default = pkgs.rustPlatform.buildRustPackage {
             pname = cargoToml.package.name;
             version = packageVersion;
 
             src = ./.;
 
-            nativeBuildInputs = with pkgs; [
-              cargo
-              rustc
-              git
-            ];
+            cargoLock.lockFile = ./Cargo.lock;
 
-            buildPhase = ''
-              runHook preBuild
-              export CARGO_HOME="$TMPDIR/cargo-home"
-              cargo build --release --locked
-              runHook postBuild
-            '';
-
-            installPhase = ''
-              runHook preInstall
-              install -Dm755 target/release/consult-llm "$out/bin/consult-llm"
-              runHook postInstall
-            '';
+            doCheck = false;
 
             meta = with pkgs.lib; {
               description = "CLI for consulting stronger LLMs from your agent workflow";
