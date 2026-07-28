@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/glama%2Fraine%2Fconsult-llm.svg)](https://mcptoplist.com/server/glama%2Fraine%2Fconsult-llm)
+
 <br>
 
 <div align="center">
