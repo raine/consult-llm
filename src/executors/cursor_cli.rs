@@ -215,7 +215,7 @@ pub(crate) fn map_cursor_model(model: &str, codex_reasoning_effort: &str) -> Str
 
     // cursor-agent encodes reasoning effort in the model name for models
     // that require it. e.g. gpt-5.3-codex + high → gpt-5.3-codex-high,
-    // gpt-5.4 + high → gpt-5.4-high. Bare gpt-5.4/gpt-5.5 are not accepted.
+    // gpt-5.6-sol + high → gpt-5.6-sol-high.
     // The effort suffix may not match cursor-agent's actual ladder for the
     // model (e.g. gpt-5.5 wants `extra-high`, not `xhigh`); the resolver in
     // `cursor_models` rewrites the candidate against the live model list.
@@ -227,7 +227,7 @@ pub(crate) fn map_cursor_model(model: &str, codex_reasoning_effort: &str) -> Str
 }
 
 pub(crate) fn model_requires_reasoning_suffix(model: &str) -> bool {
-    model.contains("-codex") || model == "gpt-5.4" || model == "gpt-5.5"
+    model.contains("-codex") || matches!(model, "gpt-5.4" | "gpt-5.5" | "gpt-5.6-sol")
 }
 
 fn append_files(text: &str, file_paths: Option<&[PathBuf]>) -> String {
@@ -319,6 +319,19 @@ impl LlmExecutor for CursorCliExecutor {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_map_cursor_model_appends_effort_to_sol() {
+        assert_eq!(map_cursor_model("gpt-5.6-sol", "high"), "gpt-5.6-sol-high");
+    }
+
+    #[test]
+    fn test_map_cursor_model_preserves_canonical_non_effort_model() {
+        assert_eq!(
+            map_cursor_model("gemini-3.1-pro-preview", "high"),
+            "gemini-3.1-pro"
+        );
+    }
 
     #[test]
     fn test_parse_cursor_line_init() {
