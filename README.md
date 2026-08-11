@@ -71,7 +71,7 @@ For the more detailed flow, [continue below](#how-it-really-works).
 
 - **Get a second opinion from another model** from your agent with relevant file context (`/consult`)
 - **Have models debate the best approach** and synthesize a consensus (`/debate`)
-- **Use existing subscriptions** via CLI backends without API keys ([Gemini CLI](#gemini-cli), [Codex CLI](#codex-cli), [Cursor CLI](#cursor-cli), [Claude CLI](#profile-backend), [OpenCode](#opencode))
+- **Use existing subscriptions** via CLI backends without API keys ([Gemini CLI](#gemini-cli), [Codex CLI](#codex-cli), [Cursor CLI](#cursor-cli), [Claude CLI](#profile-backend), [OpenCode](#opencode), [Pi](#pi))
 - **Continue conversations across requests** with `thread_id`
 - **Copy prompts to clipboard** for browser-based LLMs (`--web`)
 - **[Monitor](#monitor) active and past runs** in a real-time TUI
@@ -428,16 +428,17 @@ A **backend** is how `consult-llm` reaches that model family:
 - **`api`**: direct HTTP calls using an API key
 - **CLI backends**: shell out to a local CLI tool already installed and logged in
 
-| Model family | `api` backend | CLI backends available                            | API key env var      |
-| ------------ | ------------- | ------------------------------------------------- | -------------------- |
-| Gemini       | yes           | `gemini-cli`, `cursor-cli`, `opencode`, `profile` | `GEMINI_API_KEY`     |
-| OpenAI       | yes           | `codex-cli`, `cursor-cli`, `opencode`, `profile`  | `OPENAI_API_KEY`     |
-| DeepSeek     | yes           | `opencode`, `profile`                             | `DEEPSEEK_API_KEY`   |
-| MiniMax      | yes           | `opencode`, `profile`                             | `MINIMAX_API_KEY`    |
-| Anthropic    | yes           | `profile`, `claude-cli`, `cursor-cli`             | `ANTHROPIC_API_KEY`  |
-| Grok         | yes           | `grok-cli`, `cursor-cli`, `profile`               | `XAI_API_KEY`        |
-| Zai (GLM)    | yes           | `profile`                                         | `ZAI_API_TOKEN`      |
-| OpenRouter   | yes           | `opencode`, `profile`                             | `OPENROUTER_API_KEY` |
+| Model family | `api` backend | CLI backends available                                 | API key env var      |
+| ------------ | ------------- | ------------------------------------------------------ | -------------------- |
+| Gemini       | yes           | `gemini-cli`, `cursor-cli`, `opencode`, `pi`, `profile` | `GEMINI_API_KEY`     |
+| OpenAI       | yes           | `codex-cli`, `cursor-cli`, `opencode`, `pi`, `profile`  | `OPENAI_API_KEY`     |
+| DeepSeek     | yes           | `opencode`, `pi`, `profile`                            | `DEEPSEEK_API_KEY`   |
+| MiniMax      | yes           | `opencode`, `pi`, `profile`                            | `MINIMAX_API_KEY`    |
+| Anthropic    | yes           | `profile`, `claude-cli`, `cursor-cli`, `pi`            | `ANTHROPIC_API_KEY`  |
+| Grok         | yes           | `grok-cli`, `cursor-cli`, `pi`, `profile`              | `XAI_API_KEY`        |
+| Zai (GLM)    | yes           | `pi`, `profile`                                        | `ZAI_API_TOKEN`      |
+| Kimi         | yes           | `pi`, `profile`                                        | `KIMI_API_KEY`       |
+| OpenRouter   | yes           | `opencode`, `pi`, `profile`                            | `OPENROUTER_API_KEY` |
 
 ### API backend
 
@@ -621,6 +622,18 @@ consult-llm config set opencode.default_provider copilot
 consult-llm config set openai.opencode_provider openai
 ```
 
+#### Pi
+
+Routes through [`pi`](https://github.com/earendil-works/pi-mono) (pi-coding-agent) to any provider it supports (Anthropic, OpenAI, Google, DeepSeek, MiniMax, xAI, OpenRouter, Z.AI):
+
+```bash
+consult-llm config set anthropic.backend pi
+consult-llm config set openai.backend pi
+consult-llm config set gemini.backend pi
+```
+
+No API key needed in consult-llm -- authentication is handled by your pi installation (`pi /login` or provider env vars). The model is passed as `--model <provider>/<id>` (e.g. `anthropic/claude-opus-5`); a configured `reasoning_effort` is passed as `--thinking <level>`. Threads are resumed with `--session <id>`.
+
 #### OpenRouter
 
 Routes `openrouter/*` models through OpenCode:
@@ -707,7 +720,7 @@ the conversation with full context from prior turns.
   use write-through caching for the payment endpoints.
 ```
 
-This works with Gemini CLI, Codex CLI, Cursor CLI, OpenCode, and Claude CLI. OpenCode sessions use a consult-llm-managed SQLite database per thread unless `OPENCODE_DB` is set in provider `env`; this avoids contention between unrelated parallel OpenCode runs while preserving resume for returned thread IDs. See the [debate skills](#skills) for multi-LLM workflows that use thread IDs to maintain context across debate rounds.
+This works with Gemini CLI, Codex CLI, Cursor CLI, OpenCode, Pi, and Claude CLI. OpenCode sessions use a consult-llm-managed SQLite database per thread unless `OPENCODE_DB` is set in provider `env`; this avoids contention between unrelated parallel OpenCode runs while preserving resume for returned thread IDs. See the [debate skills](#skills) for multi-LLM workflows that use thread IDs to maintain context across debate rounds.
 
 ### Config files
 
@@ -901,14 +914,15 @@ Environment variables override config file values.
 | `CONSULT_LLM_<PROVIDER>_BASE_URL`          | Override the API base URL for a provider's `api` backend (e.g. `CONSULT_LLM_ZAI_BASE_URL` for the Z.AI coding-plan endpoint) | URL                                                  | registry default                                     |
 | `CONSULT_LLM_DEFAULT_MODEL`                | Model or selector to use for single-response calls when `-m` is omitted                 | selector or exact model ID                           | first available                                      |
 | `CONSULT_LLM_DEFAULT_MODELS`               | Comma-separated ordered multi-model defaults when `-m` is omitted; duplicates preserved | selectors or exact model IDs                         | empty (falls through to default_model then fallback) |
-| `CONSULT_LLM_GEMINI_BACKEND`               | Backend for Gemini models                                                               | `api` `gemini-cli` `cursor-cli` `opencode` `profile` | `api`                                                |
-| `CONSULT_LLM_OPENAI_BACKEND`               | Backend for OpenAI models                                                               | `api` `codex-cli` `cursor-cli` `opencode` `profile`  | `api`                                                |
-| `CONSULT_LLM_DEEPSEEK_BACKEND`             | Backend for DeepSeek models                                                             | `api` `opencode` `profile`                           | `api`                                                |
-| `CONSULT_LLM_MINIMAX_BACKEND`              | Backend for MiniMax models                                                              | `api` `opencode` `profile`                           | `api`                                                |
-| `CONSULT_LLM_ANTHROPIC_BACKEND`            | Backend for Anthropic models                                                            | `api` `profile` `claude-cli` `cursor-cli`            | `api`                                                |
-| `CONSULT_LLM_GROK_BACKEND`                 | Backend for Grok models                                                                 | `api` `grok-cli` `cursor-cli` `profile`              | `api`                                                |
-| `CONSULT_LLM_ZAI_BACKEND`                  | Backend for Z.AI (GLM) models                                                           | `api` `profile`                                      | `api`                                                |
-| `CONSULT_LLM_OPENROUTER_BACKEND`           | Backend for OpenRouter models                                                           | `api` `opencode` `profile`                           | `api`                                                |
+| `CONSULT_LLM_GEMINI_BACKEND`               | Backend for Gemini models                                                               | `api` `gemini-cli` `cursor-cli` `opencode` `pi` `profile` | `api`                                                |
+| `CONSULT_LLM_OPENAI_BACKEND`               | Backend for OpenAI models                                                               | `api` `codex-cli` `cursor-cli` `opencode` `pi` `profile`  | `api`                                                |
+| `CONSULT_LLM_DEEPSEEK_BACKEND`             | Backend for DeepSeek models                                                             | `api` `opencode` `pi` `profile`                           | `api`                                                |
+| `CONSULT_LLM_MINIMAX_BACKEND`              | Backend for MiniMax models                                                              | `api` `opencode` `pi` `profile`                           | `api`                                                |
+| `CONSULT_LLM_ANTHROPIC_BACKEND`            | Backend for Anthropic models                                                            | `api` `profile` `claude-cli` `cursor-cli` `pi`            | `api`                                                |
+| `CONSULT_LLM_GROK_BACKEND`                 | Backend for Grok models                                                                 | `api` `grok-cli` `cursor-cli` `pi` `profile`              | `api`                                                |
+| `CONSULT_LLM_ZAI_BACKEND`                  | Backend for Z.AI (GLM) models                                                           | `api` `pi` `profile`                                      | `api`                                                |
+| `CONSULT_LLM_KIMI_BACKEND`                 | Backend for Kimi (Moonshot) models                                                      | `api` `pi` `profile`                                      | `api`                                                |
+| `CONSULT_LLM_OPENROUTER_BACKEND`           | Backend for OpenRouter models                                                           | `api` `opencode` `pi` `profile`                           | `api`                                                |
 | `CONSULT_LLM_ALLOWED_MODELS`               | Comma-separated allowlist; restricts which models are enabled                           | model IDs                                            | all                                                  |
 | `CONSULT_LLM_EXTRA_MODELS`                 | Comma-separated extra model IDs to add to the catalog                                   | model IDs                                            |                                                      |
 | `CONSULT_LLM_CODEX_REASONING_EFFORT`       | Reasoning effort for Codex CLI backend                                                  | `none` `minimal` `low` `medium` `high` `xhigh`       | `high`                                               |

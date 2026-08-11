@@ -150,6 +150,7 @@ fn backend_binary(backend: &str) -> Option<&'static str> {
         "grok-cli" => Some("grok"),
         "cursor-cli" => Some("cursor-agent"),
         "opencode" => Some("opencode"),
+        "pi" => Some("pi"),
         "claude-cli" => Some("claude"),
         _ => None,
     }

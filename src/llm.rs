@@ -11,6 +11,7 @@ use crate::executors::cursor_cli::CursorCliExecutor;
 use crate::executors::gemini_cli::GeminiCliExecutor;
 use crate::executors::grok_cli::GrokCliExecutor;
 use crate::executors::opencode_cli::OpenCodeCliExecutor;
+use crate::executors::pi_cli::PiCliExecutor;
 use crate::executors::types::LlmExecutor;
 use crate::models::{ApiProtocol, Provider};
 
@@ -135,6 +136,15 @@ impl ExecutorProvider {
                     cfg.env_for(provider).clone(),
                 ))
             }
+            Backend::PiCli => {
+                let prefix = provider.spec().default_pi_provider.to_string();
+                let effort = cfg.reasoning_effort_for(provider).map(str::to_string);
+                Arc::new(PiCliExecutor::new(
+                    prefix,
+                    effort,
+                    cfg.env_for(provider).clone(),
+                ))
+            }
             Backend::Profile => {
                 let selected = cfg.selected_cli_profile_for(provider).ok_or_else(|| {
                     anyhow::anyhow!(
@@ -223,6 +233,31 @@ mod tests {
             .get_executor("claude-opus-5")
             .expect("should create claude cli executor");
         assert_eq!(executor.reasoning_effort("claude-opus-5"), Some("xhigh"));
+    }
+
+    #[test]
+    fn test_pi_cli_executor_is_created() {
+        let env = env_from(&[("CONSULT_LLM_ANTHROPIC_BACKEND", "pi")]);
+        let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
+        let provider = ExecutorProvider::new(Arc::new(config));
+        let executor = provider
+            .get_executor("claude-opus-5")
+            .expect("should create pi cli executor");
+        assert_eq!(executor.backend_name(), "pi_cli");
+    }
+
+    #[test]
+    fn test_pi_cli_executor_uses_configured_effort() {
+        let env = env_from(&[
+            ("CONSULT_LLM_ANTHROPIC_BACKEND", "pi"),
+            ("CONSULT_LLM_CLAUDE_REASONING_EFFORT", "high"),
+        ]);
+        let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
+        let provider = ExecutorProvider::new(Arc::new(config));
+        let executor = provider
+            .get_executor("claude-opus-5")
+            .expect("should create pi cli executor");
+        assert_eq!(executor.reasoning_effort("claude-opus-5"), Some("high"));
     }
 
     #[test]

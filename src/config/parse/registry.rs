@@ -266,15 +266,21 @@ mod tests {
     }
 
     #[test]
-    fn test_extra_kimi_model_is_available_with_openai_api_backend() {
+    fn test_extra_kimi_model_is_available_with_kimi_api_backend() {
+        // Since the Kimi (Moonshot) provider family exists, kimi-* model IDs route to
+        // it instead of OpenAI; a custom OpenAI-compatible gateway is configured via
+        // CONSULT_LLM_KIMI_BASE_URL + KIMI_API_KEY (supersedes the #19 recipe).
         let env = env_from(&[
-            ("OPENAI_API_KEY", "key"),
-            ("CONSULT_LLM_EXTRA_MODELS", "kimi-k3"),
-            ("CONSULT_LLM_ALLOWED_MODELS", "kimi-k3"),
+            ("KIMI_API_KEY", "key"),
+            ("CONSULT_LLM_EXTRA_MODELS", "kimi-k2.5"),
+            ("CONSULT_LLM_ALLOWED_MODELS", "kimi-k2.5"),
         ]);
         let (_, registry) = parse_config(env).unwrap();
-        assert_eq!(registry.allowed_models, vec!["kimi-k3"]);
-        assert_eq!(registry.resolve_model(Some("kimi-k3")).unwrap(), "kimi-k3");
+        assert_eq!(registry.allowed_models, vec!["kimi-k2.5"]);
+        assert_eq!(
+            registry.resolve_model(Some("kimi-k2.5")).unwrap(),
+            "kimi-k2.5"
+        );
     }
 
     #[test]
@@ -303,6 +309,8 @@ mod tests {
                 "grok-4.3",
                 "openrouter/auto",
                 "glm-5.2",
+                "kimi-k3",
+                "kimi-k2.7-code",
             ]
         );
     }
