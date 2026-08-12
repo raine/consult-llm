@@ -240,10 +240,11 @@ mod tests {
     fn test_parse_config_with_grok_key() {
         let env = env_from(&[("XAI_API_KEY", "xai-test")]);
         let (config, registry) = parse_config(env).unwrap();
+        assert!(config.allowed_models.contains(&"grok-4.6".to_string()));
         assert!(config.allowed_models.contains(&"grok-4.5".to_string()));
         assert!(config.allowed_models.contains(&"grok-4.3".to_string()));
         assert_eq!(config.providers[&Provider::Grok].backend, Backend::Api);
-        assert_eq!(registry.resolve_model(Some("grok")).unwrap(), "grok-4.5");
+        assert_eq!(registry.resolve_model(Some("grok")).unwrap(), "grok-4.6");
         assert!(config.default_models.is_empty());
     }
 
@@ -334,7 +335,7 @@ mod tests {
 
     #[test]
     fn test_grok_provider_metadata() {
-        assert_eq!(Provider::from_model("grok-4.5"), Some(Provider::Grok));
+        assert_eq!(Provider::from_model("grok-4.6"), Some(Provider::Grok));
         assert_eq!(Provider::Grok.api_base_url(), Some("https://api.x.ai/v1"));
     }
 

@@ -286,6 +286,7 @@ mod tests {
                 "MiniMax-M2.7",
                 "claude-opus-5",
                 "claude-opus-4-7",
+                "grok-4.6",
                 "grok-4.5",
                 "grok-4.3",
                 "openrouter/auto",

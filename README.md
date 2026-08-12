@@ -22,7 +22,7 @@
 `consult-llm` is a tool for getting a second opinion from another AI model,
 right inside your existing agent workflow. Use it to plan architecture,
 review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-5.6 Sol, Gemini 3.1 Pro, Claude Opus 4.7,
-DeepSeek V4 Pro, MiniMax M2.7, Grok 4.5, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
+DeepSeek V4 Pro, MiniMax M2.7, Grok 4.6, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
 multi-turn threads, git diff context, web-mode clipboard export, and a live monitor TUI.
 
 ## Why a second opinion?
@@ -513,13 +513,13 @@ The same `extra_args` field is supported on `gemini:` and `grok:` for their nati
 
 #### Grok CLI
 
-Requires the Grok CLI on `PATH` and an authenticated Grok account. Grok 4.5 is
+Requires the Grok CLI on `PATH` and an authenticated Grok account. Grok 4.6 is
 the preferred built-in Grok model:
 
 ```bash
 consult-llm config set grok.backend grok-cli
-consult-llm config set allowed_models '[grok-4.5]'
-consult-llm config set default_model grok-4.5
+consult-llm config set allowed_models '[grok-4.6]'
+consult-llm config set default_model grok-4.6
 consult-llm config set grok.reasoning_effort high
 ```
 
@@ -754,7 +754,7 @@ If `default_models` names a model excluded by `allowed_models`, config loading f
 Example `~/.config/consult-llm/config.yaml`:
 
 ```yaml
-allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.5]
+allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.6]
 default_model: gpt-5.6-sol
 default_models: [gpt-5.6-sol, gpt-5.6-sol]
 
