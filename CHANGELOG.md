@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.0.29 (2026-08-12)
+
+- Added Grok 4.6 support, with the `grok` selector preferring it while Grok 4.5 and 4.3 remain available.
+- GPT-5.6 Sol consultations through Cursor CLI now use the configured reasoning effort model variant.
+- Monitor startup now clears stale active runs without adding misleading failure entries to history.
+- Agent consultations can run for up to 30 minutes, reducing timeouts during long responses.
+- Nix installations now build reliably in the standard sandbox without network access during compilation. ([#14](https://github.com/raine/consult-llm/pull/14))
+
 ## v3.0.28 (2026-07-25)
 
 - Added Claude Opus 5 support for Anthropic API and Claude CLI backends. The `anthropic` selector now prefers Claude Opus 5 while Claude Opus 4.7 remains available.
