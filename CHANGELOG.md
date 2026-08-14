@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.30 (2026-08-14)
+
+- Kimi API models can now use the OpenAI provider with a custom OpenAI-compatible gateway. ([#19](https://github.com/raine/consult-llm/pull/19))
+
 ## v3.0.29 (2026-08-12)
 
 - Added Grok 4.6 support, with the `grok` selector preferring it while Grok 4.5 and 4.3 remain available.

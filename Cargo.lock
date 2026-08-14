@@ -341,7 +341,7 @@ dependencies = [
 
 [[package]]
 name = "consult-llm"
-version = "3.0.29"
+version = "3.0.30"
 dependencies = [
  "anyhow",
  "arboard",
@@ -367,7 +367,7 @@ dependencies = [
 
 [[package]]
 name = "consult-llm-core"
-version = "3.0.29"
+version = "3.0.30"
 dependencies = [
  "chrono",
  "dirs",
@@ -381,7 +381,7 @@ dependencies = [
 
 [[package]]
 name = "consult-llm-monitor"
-version = "3.0.29"
+version = "3.0.30"
 dependencies = [
  "arboard",
  "chrono",
