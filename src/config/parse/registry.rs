@@ -266,6 +266,18 @@ mod tests {
     }
 
     #[test]
+    fn test_extra_kimi_model_is_available_with_openai_api_backend() {
+        let env = env_from(&[
+            ("OPENAI_API_KEY", "key"),
+            ("CONSULT_LLM_EXTRA_MODELS", "kimi-k3"),
+            ("CONSULT_LLM_ALLOWED_MODELS", "kimi-k3"),
+        ]);
+        let (_, registry) = parse_config(env).unwrap();
+        assert_eq!(registry.allowed_models, vec!["kimi-k3"]);
+        assert_eq!(registry.resolve_model(Some("kimi-k3")).unwrap(), "kimi-k3");
+    }
+
+    #[test]
     fn test_all_builtin_models_order() {
         // Verify the model catalog order matches the original ALL_MODELS constant.
         // Order matters: enabled_models[0] is the fallback when gpt-5.2 is absent.
