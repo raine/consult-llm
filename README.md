@@ -479,6 +479,19 @@ consult-llm config set zai.api_key your_zai_coding_plan_key
 consult-llm config set zai.base_url https://api.z.ai/api/coding/paas/v4
 ```
 
+Kimi models served by an OpenAI-compatible gateway can use the OpenAI provider
+with an extra model entry and a custom endpoint:
+
+```yaml
+extra_models: [kimi-k3]
+allowed_models: [kimi-k3]
+
+openai:
+  backend: api
+  api_key: your_gateway_key
+  base_url: https://your-gateway.example/v1
+```
+
 ### CLI backends
 
 Shell out to an already-installed local CLI. No API keys needed in `consult-llm`; authentication is handled by the CLI tool.

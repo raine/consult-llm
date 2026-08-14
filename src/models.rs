@@ -199,7 +199,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         provider: Provider::OpenAI,
         cursor_model_prefixes: &["gpt-", "composer-", "auto", "kimi-"],
         id: "openai",
-        model_prefixes: &["gpt-"],
+        model_prefixes: &["gpt-", "kimi-"],
         api_base_url: None,
         api_protocol: ApiProtocol::OpenAiCompat(OpenAiCompatRuntime {
             extra_body: None,
@@ -531,6 +531,13 @@ mod tests {
 
         for (model, want) in expected {
             assert_eq!(Provider::from_cursor_model(model), Some(*want));
+        }
+    }
+
+    #[test]
+    fn kimi_api_models_route_to_openai_compatible_provider() {
+        for model in &["kimi-k2.5", "kimi-k3"] {
+            assert_eq!(Provider::from_model(model), Some(Provider::OpenAI));
         }
     }
 
