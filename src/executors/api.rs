@@ -148,7 +148,7 @@ impl LlmExecutor for ApiExecutor {
                 headers: vec![
                     (
                         "Authorization".to_string(),
-                        format!("Bearer {}", &self.api_key),
+                        format!("Bearer {}", self.api_key),
                     ),
                     ("Content-Type".to_string(), "application/json".to_string()),
                 ],
