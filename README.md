@@ -38,8 +38,8 @@ is cheap, and sometimes the other model is the one that finds the path forward.
 
 ## How it works
 
-1. Install skills into your agent (Claude Code, Codex, OpenCode)
-2. Trigger with a slash command: `/consult`, `/debate`, `/collab`
+1. Install skills into your agent (Claude Code, pi, Codex, or OpenCode)
+2. Trigger with a slash command: `/llm-consult`, `/llm-debate`, `/llm-collab`
 3. The skill pipes your prompt into `consult-llm`, which calls the backend and streams the response back inline
 
 For the more detailed flow, [continue below](#how-it-really-works).
@@ -69,8 +69,8 @@ For the more detailed flow, [continue below](#how-it-really-works).
 
 ## What you can do
 
-- **Get a second opinion from another model** from your agent with relevant file context (`/consult`)
-- **Have models debate the best approach** and synthesize a consensus (`/debate`)
+- **Get a second opinion from another model** from your agent with relevant file context (`/llm-consult`)
+- **Have models debate the best approach** and synthesize a consensus (`/llm-debate`)
 - **Use existing subscriptions** via CLI backends without API keys ([Gemini CLI](#gemini-cli), [Codex CLI](#codex-cli), [Cursor CLI](#cursor-cli), [Claude CLI](#profile-backend), [OpenCode](#opencode))
 - **Continue conversations across requests** with `thread_id`
 - **Copy prompts to clipboard** for browser-based LLMs (`--web`)
@@ -117,7 +117,9 @@ echo "hello" | consult-llm -m gemini  # quick smoke test
 4. Install the skills so your agent can call `consult-llm` for you:
 
 ```bash
-consult-llm install-skills
+consult-llm skill install --agent claude
+# Or install for every supported runtime, including Claude and pi:
+consult-llm skill install --agent all
 ```
 
 Then invoke skills from inside your agent (see [Usage](#usage) right below).
@@ -312,7 +314,7 @@ This is useful when:
 <summary>Using slash command to consult multiple LLMs for comparison</summary>
 
 ```
-> /consult The branch completions should dynamic. Git should be called only when
+> /llm-consult The branch completions should dynamic. Git should be called only when
 using tab to autocomplete. Ask gemini and codex
 
 ⏺ I'll consult both Gemini and Codex about making the branch completions dynamic
@@ -384,7 +386,7 @@ using tab to autocomplete. Ask gemini and codex
 ...
 ```
 
-This example shows using the `/consult` slash command to ask multiple LLMs
+This example shows using the `/llm-consult` slash command to ask multiple LLMs
 (Gemini and Codex) about the same problem **in parallel** and compare their
 responses. Both LLMs independently arrived at the same solution, providing
 confidence in the approach.
@@ -396,9 +398,9 @@ confidence in the approach.
 The CLI is invoked by your agent via the installed skills; you don't call it directly. From inside Claude Code, OpenCode, or Codex:
 
 ```
-/consult what's the best way to model this state machine?
-/consult --gemini review this design for edge cases
-/debate should this be a separate service or stay in the monolith?
+/llm-consult what's the best way to model this state machine?
+/llm-consult --gemini review this design for edge cases
+/llm-debate should this be a separate service or stay in the monolith?
 ```
 
 ### CLI utilities
@@ -409,7 +411,8 @@ consult-llm doctor                    # diagnose backend auth and config
 consult-llm config set <key> <value>  # set a config value (user config by default)
 consult-llm init-config               # scaffold ~/.config/consult-llm/config.yaml
 consult-llm init-prompt               # scaffold ~/.config/consult-llm/SYSTEM_PROMPT.md
-consult-llm install-skills            # install bundled skills to platform skill dirs
+consult-llm skill list                # discover the bundled skill catalog
+consult-llm skill install --agent all # install bundled skills for every supported runtime
 consult-llm update                    # self-update the binary
 ```
 
@@ -1003,14 +1006,14 @@ or juggling another agent TUI, your current agent can hand off a focused prompt,
 stream the answer back inline, and continue the conversation from there.
 
 That boundary also lets the host agent and external model talk to each other in
-multi-turn workflows. `/consult` can ask for a second opinion, `/debate` can
+multi-turn workflows. `/llm-consult` can ask for a second opinion, `/llm-debate` can
 have models critique each other, and threaded CLI backends can continue the same
 conversation without leaving the agent session.
 
 The installed skills are reusable workflow definitions; the backend is just
 configuration. You can use Codex CLI for personal projects, Cursor CLI at work,
 direct APIs in CI, or different default model lists per repo while keeping the
-same `/consult`, `/debate`, and `/review-panel` habits.
+same `/llm-consult`, `/llm-debate`, and `/llm-review-panel` habits.
 
 At runtime, the installed skill decides what context to include, formats the
 prompt, and invokes `consult-llm` with stdin plus `-f` file attachments. API
@@ -1026,7 +1029,7 @@ If you like sequence diagrams, here's one for you:
 sequenceDiagram
     participant User
     participant Agent as Host agent<br/>(Claude Code, Codex, OpenCode)
-    participant Skill as Workflow skill<br/>(/consult, /debate, /collab)
+    participant Skill as Workflow skill<br/>(/llm-consult, /llm-debate, /llm-collab)
     participant CLI as consult-llm CLI
     participant Config as Config resolver
     participant Backend as Backend adapter<br/>(API or local CLI)
@@ -1050,62 +1053,38 @@ sequenceDiagram
 
 ## Skills
 
-### Architecture
+This repository is the canonical source for the `consult-llm` CLI reference skill and the complete `llm-*` workflow family. They are embedded in each released binary, so listing, printing, and installing skills never uses the network.
 
-The skill system has two layers:
+The low-level [`consult-llm`](skills/consult-llm/SKILL.md) skill documents stdin, file context, output, and multi-turn mechanics. Workflow skills compose those calls:
 
-**`consult-llm` (base CLI)** handles the mechanics: reading stdin, attaching file context, calling the right backend, streaming the response, and managing thread IDs for multi-turn conversations. A dedicated `consult-llm` reference skill documents this contract and is loaded by other skills before they invoke the CLI.
+- [`llm-consult`](skills/llm-consult/SKILL.md)
+- [`llm-collab`](skills/llm-collab/SKILL.md) and [`llm-collab-vs`](skills/llm-collab-vs/SKILL.md)
+- [`llm-debate`](skills/llm-debate/SKILL.md) and [`llm-debate-vs`](skills/llm-debate-vs/SKILL.md)
+- [`llm-panel`](skills/llm-panel/SKILL.md)
+- [`llm-review`](skills/llm-review/SKILL.md), [`llm-review-panel`](skills/llm-review-panel/SKILL.md), and [`llm-skill-review`](skills/llm-skill-review/SKILL.md)
+- [`llm-implement`](skills/llm-implement/SKILL.md)
+- [`llm-workshop`](skills/llm-workshop/SKILL.md)
 
-**Workflow skills** compose on top. They gather context from the codebase, decide which models to call and how, and synthesize the results for you. When you run `/consult` or `/debate`, the agent reads a skill file that tells it how to orchestrate one or more `consult-llm` calls and what to do with the responses.
-
-### Invocation
-
-When a workflow skill runs, the agent pipes the prompt via stdin and passes file context with `-f`:
-
-```bash
-cat <<'__CONSULT_LLM_END__' | consult-llm -m gemini -f src/main.rs -f src/config.rs
-Your question here.
-__CONSULT_LLM_END__
-```
-
-The response streams back to stdout and the agent sees it inline. If the response exceeds the shell tool's output limit (30k chars in Claude Code by default), the full output is saved to a file and the agent is notified where to find it; it can use `Read` to retrieve the rest. In practice this is rare; the large majority of responses are well under that limit.
-
-### Install
+Discover or inspect the exact catalog bundled with your binary:
 
 ```bash
-consult-llm install-skills
+consult-llm skill list
+consult-llm skill print llm-consult
+consult-llm skill list --json
+consult-llm version --json
 ```
 
-Installs to all detected platforms. Target a specific one with `--platform`:
+Install one skill or the complete catalog:
 
 ```bash
-consult-llm install-skills --platform claude
-consult-llm install-skills --platform opencode
-consult-llm install-skills --platform codex
+consult-llm skill install llm-consult --agent claude
+consult-llm skill install --agent pi
+consult-llm skill install --agent all
 ```
 
-Platforms supported:
+Install roots are `~/.claude/skills/`, `~/.pi/agent/skills/`, `~/.codex/skills/`, and `~/.config/opencode/skills/`. Use `--target-root <PATH>` for an alternate home-like root, `--dry-run` to inspect a no-write plan, and `--json` for structured output. Existing unmanaged or locally modified files are refused; `--force` is required to replace them. Copies previously installed by this binary upgrade safely and identical copies are left unchanged.
 
-- Claude Code: `~/.claude/skills/`
-- OpenCode: `~/.config/opencode/skills/`
-- Codex: `~/.codex/skills/`
-
-### Workflow skills
-
-All workflow skills accept `--<selector>` flags matching the selectors reported by `consult-llm models` (e.g. `--gemini`, `--openai`, `--deepseek`). With no selector flag, multi-model skills use the ordered `Default models` list printed by `consult-llm models`, which comes from `default_models`; duplicate entries are intentional and preserved.
-
-- [`consult`](skills/consult/SKILL.md): ask one or more external LLMs; any number of `--<selector>` flags, plus `--browser` for clipboard/web mode
-- [`collab`](skills/collab/SKILL.md): multiple LLMs brainstorm together, building on each other's ideas
-- [`collab-vs`](skills/collab-vs/SKILL.md): the agent brainstorms with one partner LLM (`--<selector>` required) in alternating turns
-- [`debate`](skills/debate/SKILL.md): multiple LLMs propose and critique competing approaches
-- [`debate-vs`](skills/debate-vs/SKILL.md): the agent debates one opponent LLM (`--<selector>` required), then synthesizes the best answer
-- [`panel`](skills/panel/SKILL.md): role-asymmetric advisory panel; each model speaks from one expert lens, agent synthesizes a trade-off resolution. The agent picks roles to fit the task (with a `--roles` override). Modes: `--mode design` (default) or `--mode review` for diff critique
-- [`review-panel`](skills/review-panel/SKILL.md): standalone multi-model code review of a diff with identical prompts; agent dedupes findings by severity/confidence. Read-only by default; `--fix` opt-in for localized must-fix items
-- [`implement`](skills/implement/SKILL.md): autonomous spec → plan → review → implement → red-team workflow. Evidence-gated reviewers, written feedback ledger, triggered debug loop, opt-in commits. Rigor knob: `--rigor lite|standard|deep`
-- [`phased-implement`](skills/phased-implement/SKILL.md): coordinator that breaks a large task into a DAG of phases, each running `/implement` in its own [workmux](https://github.com/raine/workmux) worktree. Supports sequential, parallel, and mixed dependencies; per-phase merge with `/merge --keep` and ancestry verification; failure halts dependents. Requires `workmux`
-- [`workshop`](skills/workshop/SKILL.md): interactive design session - agent clarifies the idea with the user, fans out to multiple LLMs in parallel for divergent approach generation, user picks one, then co-design with optional multi-LLM critique. Saves a design doc; hand it to `/implement` to build
-
-See `skills/*/SKILL.md` for the exact prompts and invocation patterns.
+The legacy `consult-llm install-skills` spelling remains available for compatibility, but new automation should use `consult-llm skill install`.
 
 ## Updating
 
@@ -1125,7 +1104,7 @@ If you previously used the MCP server version (`consult-llm-mcp` npm package):
 2. **Install skills** so your agent can call `consult-llm` for you:
 
    ```bash
-   consult-llm install-skills
+   consult-llm skill install --agent claude
    ```
 
 3. **Migrate your config.** Any env vars you set in the MCP `"env"` block can move to `~/.config/consult-llm/config.yaml`, including API keys.
