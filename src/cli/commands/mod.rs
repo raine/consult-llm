@@ -5,4 +5,6 @@ pub mod init_config;
 pub mod init_prompt;
 pub mod install_skills;
 pub mod models;
+pub mod skill;
 pub mod update;
+pub mod version;

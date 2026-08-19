@@ -20,10 +20,13 @@ pub fn read_prompt(prompt_file: Option<&str>) -> Result<String, CliError> {
     Ok(buf)
 }
 
+#[derive(Debug)]
 pub enum CliError {
     Usage(String),
     Config(String),
     Generic(String),
+    Domain { code: &'static str, message: String },
+    System { code: &'static str, message: String },
 }
 
 impl From<anyhow::Error> for CliError {
@@ -33,16 +36,43 @@ impl From<anyhow::Error> for CliError {
 }
 
 impl CliError {
+    pub fn domain(code: &'static str, message: impl Into<String>) -> Self {
+        Self::Domain {
+            code,
+            message: message.into(),
+        }
+    }
+
+    pub fn system(code: &'static str, message: impl Into<String>) -> Self {
+        Self::System {
+            code,
+            message: message.into(),
+        }
+    }
+
     pub fn exit_code(&self) -> i32 {
         match self {
+            Self::Domain { .. } => 1,
+            Self::System { .. } => 2,
             Self::Generic(_) => 1,
             Self::Usage(_) => 2,
             Self::Config(_) => 3,
         }
     }
+
+    pub fn code(&self) -> &str {
+        match self {
+            Self::Usage(_) => "invalid_usage",
+            Self::Config(_) => "invalid_config",
+            Self::Generic(_) => "operation_failed",
+            Self::Domain { code, .. } | Self::System { code, .. } => code,
+        }
+    }
+
     pub fn message(&self) -> &str {
         match self {
             Self::Usage(s) | Self::Config(s) | Self::Generic(s) => s,
+            Self::Domain { message, .. } | Self::System { message, .. } => message,
         }
     }
 }

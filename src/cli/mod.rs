@@ -12,6 +12,10 @@ mod tests;
 #[derive(Parser, Debug)]
 #[command(name = "consult-llm", version, about = "Consult an external LLM")]
 pub struct Cli {
+    /// Emit schema-versioned JSON for commands that return structured data
+    #[arg(long, global = true)]
+    pub json: bool,
+
     #[command(subcommand)]
     pub cmd: Option<Command>,
 
@@ -76,7 +80,12 @@ pub enum Command {
     InitConfig,
     /// Set a config value
     Config(commands::config::ConfigArgs),
-    /// Install bundled skills to platform skill directories
+    /// List, print, or install bundled agent skills
+    Skill(commands::skill::SkillArgs),
+    /// Show CLI, schema, build, and bundled-skill versions
+    Version,
+    /// Install all bundled skills (legacy alias for `skill install --agent all`)
+    #[command(hide = true)]
     InstallSkills(commands::install_skills::InstallSkillsArgs),
     /// Show bundled documentation
     Docs,

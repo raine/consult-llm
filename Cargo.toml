@@ -48,7 +48,6 @@ uuid = { workspace = true }
 smallvec = "1"
 tempfile = "3"
 clap = { version = "4", features = ["derive"] }
-inquire = { version = "0.7", default-features = false, features = ["crossterm"] }
 shlex = "1"
 fs2 = "0.4"
 
