@@ -156,4 +156,3 @@ Guidelines:
 - **DRY, YAGNI** - only what's needed
 
 Save the plan to a user-requested path, or default to `plan-<feature-name>.md` in the current working directory.
-

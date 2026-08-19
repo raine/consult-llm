@@ -209,4 +209,3 @@ Add your own honest assessment as moderator:
 - What's the single most important thing to address?
 
 Save the report to a user-requested path, or default to `review-<artifact-name>.md` in the current working directory.
-
