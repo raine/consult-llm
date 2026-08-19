@@ -1,8 +1,11 @@
 ---
-name: collab-vs
+name: llm-collab-vs
 description: The agent brainstorms with a partner LLM in alternating turns, building on each other's ideas. Synthesizes the best ideas into a plan.
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
+<!-- Installed by `consult-llm skill install` — name=llm-collab-vs cli_version=3.0.30 schema_version=1; do not hand-edit. -->
 Brainstorm collaboratively with a partner LLM, building on each other's ideas in alternating turns, then synthesize the best ideas into a plan.
 
 **Load the `consult-llm` skill before proceeding** — it defines the invocation contract (stdin heredoc, flags, output format, multi-turn). Do not call the CLI without loading it first.
@@ -42,21 +45,12 @@ Load it now. Follow its invocation contract for all CLI calls in this workflow.
    - Existing patterns and conventions
    - Dependencies and interfaces
 
-   Before planning or consulting, do enough research to understand how the requested behavior actually works. Before starting, think about what resources would be useful to obtain first: relevant source files, tests, logs, generated files, config, examples, command output, external docs, or authoritative upstream source. Gather the cheapest useful evidence before forming a plan.
-
-   Do not stop at the first plausible file, definition, setting, or example. Follow references, callers, related tests, and runtime usage until you can explain the current behavior and the likely impact of changing it.
-
-2. **Ground external semantics before planning** - understand the requested behavior in the real system, not just this repo
-   - If the task depends on an external product, CLI, API, protocol, file format, or ecosystem convention, verify the relevant behavior using the cheapest authoritative evidence available: local binaries/flags, generated files, official docs, public source, package/library code, or web search.
-   - Capture only decision-relevant facts that affect scope, acceptance criteria, compatibility, or implementation constraints.
-   - Do not create a separate research artifact unless the evidence materially changes the plan.
-
-3. **Make evidence-backed assumptions** - do NOT ask clarifying questions
-   - Use best judgment based on codebase and external context
+2. **Make reasonable assumptions** - do NOT ask clarifying questions
+   - Use best judgment based on codebase context
    - Prefer simpler solutions when ambiguous
    - Follow existing patterns in the codebase
 
-4. **Prepare context summary** - create a brief summary of:
+3. **Prepare context summary** - create a brief summary of:
    - The task to be implemented
    - Relevant files discovered
    - Key patterns and conventions in the codebase
@@ -186,4 +180,3 @@ Guidelines:
 - **Small tasks** - 2-5 minutes of work each
 - **DRY, YAGNI** - only what's needed
 - **Be honest** - credit the partner when its ideas were better
-

@@ -1,15 +1,15 @@
 ---
-name: review
+name: llm-review
 description: Collect critical feedback from all registered LLMs on an artifact (architecture doc, implementation, plan). Intellectual debate with push-back — no sycophancy. Reports findings and unresolved disagreements.
 allowed-tools: Bash, Glob, Grep, Read, Write
-disable-model-invocation: true
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
+<!-- Installed by `consult-llm skill install` — name=llm-review cli_version=3.0.30 schema_version=1; do not hand-edit. -->
 Collect critical, honest feedback from all LLMs on an artifact. Push back on weak arguments. Report both consensus findings and unresolved disagreements.
 
-## Phase 0: Load `consult-llm` skill
-
-**Load the `consult-llm` skill before proceeding** — it defines the invocation contract (stdin heredoc, flags, output format, multi-turn). Do not call the CLI without loading it first.
+Load `consult-llm` skill for CLI invocation mechanics.
 
 **Arguments:** `$ARGUMENTS`
 
@@ -208,13 +208,5 @@ Add your own honest assessment as moderator:
 - Are there issues NO reviewer caught that you noticed?
 - What's the single most important thing to address?
 
-Save the report to `history/review-<artifact-name>.md`.
+Save the report to a user-requested path, or default to `review-<artifact-name>.md` in the current working directory.
 
-## Critical Rules
-
-- **Independence first.** Phase 2 reviews are fully independent — all models receive the same prompt via parallel `-m` flags in a single call. Do not show one reviewer's output to another until Phase 3.
-- **No sycophancy.** Every prompt must instruct LLMs to be critical, disagree openly, and push back. This skill exists to find problems, not to validate.
-- **Bash timeout `600000`** on every `consult-llm` call — LLM responses routinely exceed the 2-minute default.
-- **Unresolved disagreements are valid output.** Do not force consensus. Flag genuine disagreements clearly rather than papering over them.
-- **Verify before adopting.** Findings are claims, not facts. If a reviewer cites a specific file/line, confirm it exists and says what they claim before including it in the report.
-- **Phase discipline.** Phase 1 is LLM-free (agent reads and prepares context). Phase 2 is independent LLM work. Phase 3 is adversarial cross-review. Phase 4 is agent synthesis.

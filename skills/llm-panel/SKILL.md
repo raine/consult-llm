@@ -1,10 +1,13 @@
 ---
-name: panel
+name: llm-panel
 description: Role-specialized LLM panel analyzes a task from asymmetric expert lenses (architect, security, maintainability, test-strategist by default). Agent synthesizes a trade-off resolution.
 allowed-tools: Bash, Glob, Grep, Read
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
-Run a role-asymmetric advisory panel. Each role analyzes the same task from a single expert lens; the agent synthesizes a PM-style trade-off resolution. Use this when a decision spans multiple domains that pull in different directions and one of them shouldn't silently win. For peer-style brainstorming with no role separation, use `/collab`. For multi-model review of an existing diff with identical prompts, use `/review-panel`.
+<!-- Installed by `consult-llm skill install` — name=llm-panel cli_version=3.0.30 schema_version=1; do not hand-edit. -->
+Run a role-asymmetric advisory panel. Each role analyzes the same task from a single expert lens; the agent synthesizes a PM-style trade-off resolution. Use this when a decision spans multiple domains that pull in different directions and one of them shouldn't silently win. For peer-style brainstorming with no role separation, use `/llm-collab`. For multi-model review of an existing diff with identical prompts, use `/llm-review-panel`.
 
 **Load the `consult-llm` skill before proceeding** — it defines the invocation contract (heredocs, timeouts, `--run`, prompt files, thread IDs). Do not call the CLI without loading it first.
 
@@ -37,7 +40,7 @@ After picking, **show the chosen roles to the user before Round 1** so they can 
 - `--diff-base <ref>` — review mode only. Default is auto-detected (see Phase 1). Pass an explicit ref to override.
 - `--react` — opt in to a second round where each role responds to the agent's draft synthesis on its own thread.
 
-**Model assignment:** any `--<selector>` from the Models block selects a backing model. Repeat for multiple. With no selectors, use all listed selectors in their listed order. Roles map to selectors positionally — first role to first selector, etc. This workflow requires each role to end up on a **distinct** resolved model; enforce that before invoking `--run`.
+**Model assignment:** any `--<selector>` from the Models block selects a backing model. Repeat for multiple. With no selectors, use all listed selectors in their listed order. Roles map to selectors positionally — first role to first selector, etc. Each role must end up on a **distinct** resolved model (`--run` rejects duplicates).
 
 Strip all flags; the remainder is the panel focus. In `design` mode, treat it as the proposal/decision under analysis. In `review` mode, treat it as optional review focus.
 
@@ -69,14 +72,12 @@ Build a context summary that every role sees verbatim. Reasonable assumptions on
 **Both modes:**
 
 - Use Glob/Grep/Read to find files, patterns, conventions, constraints related to the focus.
-- Before planning or consulting, do enough research to understand how the requested behavior actually works. Before starting, think about what resources would be useful to obtain first: relevant source files, tests, logs, generated files, config, examples, command output, external docs, or authoritative upstream source. Gather the cheapest useful evidence before forming a plan.
-- Do not stop at the first plausible file, definition, setting, or example. Follow references, callers, related tests, and runtime usage until you can explain the current behavior and the likely impact of changing it.
 - Note compatibility requirements, security boundaries, deployment concerns, prior decisions, known unknowns.
 - Exclude generated files, lockfiles, vendored dependencies unless central.
 
 **Design mode** — pass relevant source files as shared `-f <path>` to the panel call.
 
-**Review mode** — resolve `<diff-base>` using the same logic as `review-panel/SKILL.md` Phase 1 (prefer `@{upstream}`, fall back to merge-base with the detected main branch, fall back to `HEAD`). Show the resolved base to the user before running the panel.
+**Review mode** — resolve `<diff-base>` using the same logic as `llm-review-panel/SKILL.md` Phase 1 (prefer `@{upstream}`, fall back to merge-base with the detected main branch, fall back to `HEAD`). Show the resolved base to the user before running the panel.
 
 List changed files:
 
@@ -161,7 +162,7 @@ The agent owns the resolution. The roles advise; you decide.
 
 ## Phase 5: Save and report
 
-Save the synthesis to `history/<YYYY-MM-DD>-panel-<topic>.md` (the `history/` convention from `CLAUDE.md`). Derive `<topic>` from the current branch name (sanitized to kebab-case); fall back to a short slug from the panel focus when on the main branch or detached HEAD. Print the saved path.
+Save the synthesis to a user-requested path, or default to `<YYYY-MM-DD>-panel-<topic>.md` in the current working directory. Derive `<topic>` from the current branch name (sanitized to kebab-case), falling back to a short slug from the panel focus on the main branch or detached HEAD. Print the saved path.
 
 **Artifact template:**
 
@@ -207,10 +208,11 @@ The thread map lets a follow-up `--react` run or manual `consult-llm -t <id>` co
 
 Print the saved path and a short final-recommendation summary to the user.
 
+
 ## Critical rules
 
 - **Strict asymmetry.** Each role gets only its own persona prompt. Never leak other roles' prompts. Roles drifting into general commentary weaken the panel — enforce focus through the persona framing.
-- **Distinct models per role.** Validate this workflow's distinct-model requirement before invoking `--run`. Fail fast with the error format above.
+- **Distinct models per role.** `--run` rejects duplicates. Fail fast with the error format above.
 - **Mode → task mapping.** `design` ⇒ `--task plan`. `review` ⇒ `--task review` plus `--diff-files`/`--diff-base`.
 - **`--react` continues threads.** Do not start fresh threads for the reaction round.
 - **Defer to security on safety conflicts. Prefer simpler when trade-offs balance.**

@@ -1,8 +1,11 @@
 ---
-name: debate
+name: llm-debate
 description: LLMs propose and critique approaches, agent moderates the debate and synthesizes the best solution, then implements.
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
+<!-- Installed by `consult-llm skill install` — name=llm-debate cli_version=3.0.30 schema_version=1; do not hand-edit. -->
 Have multiple LLMs debate the best approach, then synthesize and implement.
 
 **Load the `consult-llm` skill before proceeding** — it defines the invocation contract (stdin heredoc, flags, output format, multi-turn). Do not call the CLI without loading it first.
@@ -25,7 +28,9 @@ Load it now. Follow its invocation contract for all CLI calls in this workflow.
 
 Check the arguments for flags:
 
-**Model flags:** any `--<selector>` from the Models block above selects a debater (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. Need at least **two** debaters. Translate model flags and defaults according to the loaded `consult-llm` skill's model-selection rules.
+**Model flags:** any `--<selector>` from the Models block above selects a debater (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. Need at least **two** debaters. With no model flag, debate uses **all** listed selectors.
+
+Translate each `--<selector>` into a `-m <selector>` argument to the CLI.
 
 **Mode flags:**
 - `--dry-run` → debate and plan only, skip implementation
@@ -43,21 +48,12 @@ Throughout this skill, references to "each LLM"/"each debater" mean every select
    - Existing patterns and conventions
    - Dependencies and interfaces
 
-   Before planning or consulting, do enough research to understand how the requested behavior actually works. Before starting, think about what resources would be useful to obtain first: relevant source files, tests, logs, generated files, config, examples, command output, external docs, or authoritative upstream source. Gather the cheapest useful evidence before forming a plan.
-
-   Do not stop at the first plausible file, definition, setting, or example. Follow references, callers, related tests, and runtime usage until you can explain the current behavior and the likely impact of changing it.
-
-2. **Ground external semantics before planning** - understand the requested behavior in the real system, not just this repo
-   - If the task depends on an external product, CLI, API, protocol, file format, or ecosystem convention, verify the relevant behavior using the cheapest authoritative evidence available: local binaries/flags, generated files, official docs, public source, package/library code, or web search.
-   - Capture only decision-relevant facts that affect scope, acceptance criteria, compatibility, or implementation constraints.
-   - Do not create a separate research artifact unless the evidence materially changes the plan.
-
-3. **Make evidence-backed assumptions** - do NOT ask clarifying questions
-   - Use best judgment based on codebase and external context
+2. **Make reasonable assumptions** - do NOT ask clarifying questions
+   - Use best judgment based on codebase context
    - Prefer simpler solutions when ambiguous
    - Follow existing patterns in the codebase
 
-4. **Prepare context summary** - create a brief summary of:
+3. **Prepare context summary** - create a brief summary of:
    - The task to be implemented
    - Relevant files discovered
    - Key patterns and conventions in the codebase
@@ -86,7 +82,7 @@ Propose your implementation approach:
 Be specific and opinionated. Defend your choices.
 ```
 
-Invoke `consult-llm` with `-f <path>` for each relevant source file, sending the opening prompt per the consult-llm invocation contract. If explicit debater flags were supplied, pass one `-m <selector>` per debater. Otherwise omit `-m` so consult-llm applies configured defaults. All models are queried in parallel in a single call.
+Invoke `consult-llm` with one `-m <selector>` per debater and `-f <path>` for each relevant source file, sending the opening prompt per the consult-llm invocation contract. All models are queried in parallel in a single call.
 
 **Extract per-model thread IDs** from the response — needed for Phase 3 since each model receives the others' rebuttals.
 
@@ -192,7 +188,8 @@ Guidelines:
 - **Small tasks** - 2-5 minutes of work each
 - **DRY, YAGNI** - only what's needed
 
-Save the plan to `history/plan-<feature-name>.md`.
+Save the plan to a user-requested path, or default to `plan-<feature-name>.md` in the current working directory.
+
 
 ## Phase 5: Implement
 

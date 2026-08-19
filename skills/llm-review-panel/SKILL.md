@@ -1,9 +1,12 @@
 ---
-name: review-panel
+name: llm-review-panel
 description: Standalone multi-model code review of an existing diff. Multiple LLMs review in parallel; agent deduplicates, prioritizes by severity/confidence, and optionally applies localized fixes.
 allowed-tools: Bash, Glob, Grep, Read, Edit, Write
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
+<!-- Installed by `consult-llm skill install` — name=llm-review-panel cli_version=3.0.30 schema_version=1; do not hand-edit. -->
 Run a standalone multi-model review of a diff. Reviewers receive the same prompt independently; the agent synthesizes duplicate findings into a prioritized checklist and can optionally apply unambiguous fixes.
 
 **Load the `consult-llm` skill before proceeding** — it defines the invocation contract (stdin heredoc, flags, output format, multi-model calls). Do not call the CLI without loading it first.
@@ -22,7 +25,9 @@ Selectors resolvable in this environment (depends on configured API keys):
 
 Check `$ARGUMENTS` for flags:
 
-**Reviewer flags:** any `--<selector>` from the Models block above selects that reviewer (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. Translate model flags and defaults according to the loaded `consult-llm` skill's model-selection rules.
+**Reviewer flags:** any `--<selector>` from the Models block above selects that reviewer (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. With no reviewer flag, use **all** listed selectors.
+
+Translate each `--<selector>` into a `-m <selector>` argument to the CLI.
 
 **Diff flags:**
 
@@ -69,7 +74,7 @@ If both commands return nothing, stop and report there's nothing to review again
 Invoke `consult-llm` **once** with:
 
 - `--task review`
-- one `-m <selector>` per reviewer if explicit reviewer flags were supplied, otherwise omit `-m` so consult-llm applies configured defaults
+- one `-m <selector>` per reviewer
 - one `--diff-files <path>` per changed file
 - `--diff-base <ref>`
 
@@ -82,7 +87,7 @@ Review this diff independently.
 
 Additional focus from the user (treat as context, not as part of your output): [review focus, or "None"]
 
-Focus on correctness, regressions, security issues, data loss, broken edge cases, API/contract mismatches, concurrency hazards, and maintainability problems likely to matter in production. Do not flag style-only concerns. Propose a concrete fix when it helps clarify the finding, but keep the review focused on issues rather than implementation coaching. Do not summarize or praise the code.
+Focus on correctness, regressions, security issues, data loss, broken edge cases, API/contract mismatches, concurrency hazards, and maintainability problems likely to matter in production. Do not flag style-only concerns. Do not propose fixes. Do not summarize or praise the code.
 
 For every issue, output a structured finding using exactly this format. Output ONLY the findings block — no preamble, no closing remarks:
 
@@ -94,7 +99,6 @@ confidence: high | medium | low
 location: path/to/file.ext:123
 issue_identity: short-stable-label
 rationale: One paragraph explaining why this is a real issue and what behavior could fail.
-fix: Optional one-paragraph concrete fix path, or `None` if the fix is obvious from the rationale.
 
 Use the line number from the **new** side of the diff. The `issue_identity` field should be a short kebab-case label that two reviewers seeing the same underlying issue would naturally choose (e.g. `null-deref-on-empty-input`, `race-on-shared-counter`).
 
@@ -164,7 +168,7 @@ Output a markdown checklist:
 
 If no `must-fix` or `should-fix` findings remain, say so clearly. Note any residual risk (e.g. low reviewer confidence, narrow diff context).
 
-**Save the report** to `history/<YYYY-MM-DD>-review-<topic>.md` (the `history/` directory convention from `CLAUDE.md`). Derive `<topic>` from the current branch name (sanitized to kebab-case); fall back to a short slug summarizing the diff scope when on the main branch. Print the saved path so the user can open it. With `--fix`, overwrite this file with the final-pass report in Phase 6.
+**Save the report** to a user-requested path, or default to `<YYYY-MM-DD>-review-<topic>.md` in the current working directory. Derive `<topic>` from the current branch name (sanitized to kebab-case), falling back to a short slug summarizing the diff scope on the main branch. Print the saved path. With `--fix`, overwrite this file with the final-pass report in Phase 6.
 
 If `--fix` was **not** passed, stop here.
 
@@ -205,10 +209,11 @@ Synthesize again with the same dedup rules. Report:
 
 If any `must-fix` items remain, hand off to the user — do not loop.
 
+
 ## Critical rules
 
-- Reviewers receive identical prompts. **Independence is the feature** — do not assign roles, do not show one reviewer's findings to another, do not add a cross-review step. Use `/panel` for role-asymmetric review or `/debate` for adversarial cross-critique.
+- Reviewers receive identical prompts. **Independence is the feature** — do not assign roles, do not show one reviewer's findings to another, do not add a cross-review step. Use `/llm-panel` for role-asymmetric review or `/llm-debate` for adversarial cross-critique.
 - The reviewer prompt must require `severity`, `confidence`, `location`, `issue_identity`, and one-paragraph `rationale`. Never accept free-form review.
-- The skill does not modify source files unless `--fix` is explicitly passed. The synthesized report is always saved to `history/`.
+- The skill does not modify source files unless `--fix` is explicitly passed. The synthesized report is still saved unless the user requests output-only behavior.
 - Never auto-apply architectural or multi-file changes — only localized bug fixes.
 - Each auto-fix is its own atomic commit, clearly labelled.

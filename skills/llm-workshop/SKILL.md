@@ -1,10 +1,13 @@
 ---
-name: workshop
+name: llm-workshop
 description: Interactive design session — agent facilitates a clarifying dialogue with the user, fans out to multiple LLMs in parallel for divergent approach generation, lets the user pick one, then co-designs the chosen approach with optional multi-LLM critique before saving.
-allowed-tools: AskUserQuestion, Bash, Glob, Grep, Read, Write
+allowed-tools: Bash, Glob, Grep, Read, Write
+cli_version: "3.0.30"
+schema_version: 1
 ---
 
-A facilitated design session. The user brings a rough idea; the agent clarifies it through dialogue, then convenes external LLMs to propose distinct approaches in parallel; the user picks one; agent and user finalize the design, with an optional multi-LLM critique pass before saving. Use this when you have a vague idea and want expert divergence without losing the user-in-the-loop. For 1:1 design dialogue with no LLMs, use `/brainstorm`. For role-asymmetric advisory analysis without user interaction, use `/panel`.
+<!-- Installed by `consult-llm skill install` — name=llm-workshop cli_version=3.0.30 schema_version=1; do not hand-edit. -->
+A facilitated design session. The user brings a rough idea; the agent clarifies it through dialogue, then convenes external LLMs to propose distinct approaches in parallel; the user picks one; agent and user finalize the design, with an optional multi-LLM critique pass before saving. Use this when you have a vague idea and want expert divergence without losing the user-in-the-loop. For role-asymmetric advisory analysis without user interaction, use `/llm-panel`.
 
 **Load the `consult-llm` skill before proceeding** — it defines the invocation contract (stdin heredoc, flags, output format, multi-model calls). Do not call the CLI without loading it first.
 
@@ -22,14 +25,13 @@ Selectors resolvable in this environment (depends on configured API keys):
 
 Check `$ARGUMENTS` for flags:
 
-**Expert flags:** any `--<selector>` from the Models block selects an expert (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. Translate model flags and defaults according to the loaded `consult-llm` skill's model-selection rules.
+**Expert flags:** any `--<selector>` from the Models block selects an expert (e.g. `--gemini`, `--openai`, `--deepseek`). Repeat for multiple. With no selector flag, use **all** listed selectors in parallel. Translate each `--<selector>` into a `-m <selector>` argument.
 
 **Mode flags:**
 
 - `--max-approaches N` — cap how many distinct approaches surface in Phase 2 after dedup. Default `4`. Min `2`, max `5`.
 - `--no-critique` — skip the Phase 4 multi-LLM critique pass on the finalized design.
-- `--no-save` — print the design at the end but do not write to `history/`.
-- `--consult-first` — before Phase 1, fan the user's raw description out to the selected experts to surface clarifying dimensions and candidate options. Phase 1 then walks the user through those LLM-suggested questions step by step instead of starting from scratch. 
+- `--no-save` — print the design at the end but do not write a report file.
 
 Strip all flags from arguments to get the user's initial idea description. If empty, ask the user to describe their idea before continuing.
 
@@ -37,55 +39,15 @@ Strip all flags from arguments to get the user's initial idea description. If em
 
 Load it now. Follow its invocation contract for every CLI call.
 
-## Phase 0.5: Consult-first (only with `--consult-first`)
-
-Skip this phase unless `--consult-first` was passed. When enabled, this phase runs **before** Phase 1 and produces a list of clarifying questions (with candidate options) that drive Phase 1.
-
-Fan the raw user description to all selected experts in a single parallel `consult-llm` call. Pass relevant codebase files as `-f <path>` if the description references them. Capture the `[thread_id:group_xxx]` from line 1 — reuse it as the Phase 2 group thread so experts retain context.
-
-**Consult-first prompt:**
-
-```
-A user has a rough idea they want to design a solution for. The idea is not yet clarified — your job is NOT to propose approaches. Your job is to surface the questions that must be answered before approaches can be proposed.
-
-User's raw description:
-[verbatim user description]
-
-Output 4–8 clarifying questions a designer would need answered before committing to an approach. For each question, output exactly:
-
-### Question <N>: <short label>
-**Why it matters:** <one sentence on what hinges on the answer>
-**Candidate options:**
-- <option 1 — 1–5 word label> — <one-line description>
-- <option 2 — ...>
-- <option 3 — ...>
-- (2–4 options per question; the user can always answer "Other")
-
-Focus on questions where different answers lead to materially different designs (scope, constraints, success criteria, hard limits, existing patterns to preserve). Skip cosmetic or trivially-answerable questions. Do not propose solutions or approaches.
-```
-
-**Synthesize the questions:**
-
-- Collect all questions across experts.
-- Group near-duplicates (same dimension, different surface label); merge their option sets, deduping options.
-- Drop questions that are obviously irrelevant or already answered by the user's description.
-- Order by dependency — questions whose answers constrain later questions go first (e.g. scope before performance budget).
-
-The result is an ordered list of questions, each with 2–4 deduped candidate options. Carry this list into Phase 1.
-
 ## Phase 1: Clarify the idea (user dialogue, no LLMs)
 
-This phase is purely user + agent. Do not call external LLMs in this phase — Phase 0.5 already gathered LLM input on what to ask; further LLM calls here would anchor on a half-formed framing and pollute Phase 2.
-
-**With `--consult-first`:** walk the synthesized question list from Phase 0.5 one question at a time via `AskUserQuestion`, using the LLM-suggested options (plus "Other"). After each answer, decide whether the next pre-built question still applies; drop or rephrase ones the answer made obsolete. You may also insert your own follow-up questions when an answer surfaces a gap the LLM list didn't anticipate. Stop when the problem statement is tight — don't grind through every pre-built question if you have enough.
-
-**Without `--consult-first`:** clarify from scratch as below.
+This phase is purely user + agent. Do not call external LLMs yet — premature LLM input anchors on a half-formed framing and pollutes Phase 2.
 
 1. If the idea references the codebase, explore briefly with Glob/Grep/Read to ground later questions.
-2. Use `AskUserQuestion` to ask clarifying questions **one at a time**:
+2. Ask clarifying questions conversationally, **one at a time**:
    - One question per message — never batch.
-   - Provide 2–4 options with concise labels (1–5 words); use descriptions for detail.
-   - The user can always pick "Other" for free-form input.
+   - Suggest 2–4 concrete options as a short numbered list to anchor the answer; keep the labels tight (1–5 words) and add a line of detail where it helps.
+   - Make clear the user can answer free-form — the options are prompts, not a menu.
    - If you realize you misunderstood, acknowledge and course-correct.
 3. Stop asking when you have enough clarity to write a one-paragraph problem statement that the experts could act on without further input. Common things to nail down before stopping: scope, in/out, performance and compatibility constraints, success criteria, hard constraints (existing patterns to preserve, dependencies you cannot add).
 
@@ -127,7 +89,7 @@ Propose 2–3 distinct approaches. Approaches must differ in their underlying st
 Do not propose implementations or pseudo-code. Do not pick a winner. Do not soften trade-offs.
 ```
 
-Invoke `consult-llm` with `-f` for relevant files. If explicit expert flags were supplied, pass one `-m <selector>` per expert. Otherwise omit `-m` so consult-llm applies configured defaults. **With `--consult-first`:** pass `-t <group_thread_id>` from Phase 0.5 so experts retain the clarification context. Only the finalized problem statement needs to go in the new prompt. Capture the `[thread_id:group_xxx]` from line 1, which is needed for Phase 4 critique continuation.
+Invoke `consult-llm` with one `-m <selector>` per expert and `-f` for relevant files. Capture the `[thread_id:group_xxx]` from line 1 — needed for Phase 4 critique continuation.
 
 ### Synthesize approaches
 
@@ -141,7 +103,7 @@ Filter and rank:
 
 ### Present to the user
 
-Show the surviving approaches conversationally, then use `AskUserQuestion` with one option per approach plus an "Other / hybrid" option:
+Show the surviving approaches conversationally as a numbered list — one entry per approach plus a final "Other / hybrid" choice — and ask the user which one they want to take forward (they can answer free-form):
 
 ```
 **Approach A: <name>** — <one-line summary>
@@ -154,11 +116,11 @@ Proposed by: <experts>
 [2–4 total]
 ```
 
-If the user picks "Other / hybrid", use `AskUserQuestion` to pin down which elements they want and continue Phase 3 from the synthesis. Do **not** start a new Phase 2 round unless the user explicitly rejects all surviving approaches as off-target — in that case, restate the problem and rerun Phase 2 once.
+If the user picks "Other / hybrid", ask a conversational follow-up to pin down which elements they want and continue Phase 3 from the synthesis. Do **not** start a new Phase 2 round unless the user explicitly rejects all surviving approaches as off-target — in that case, restate the problem and rerun Phase 2 once.
 
 ## Phase 3: Co-design the chosen approach (user + agent)
 
-Back to user dialogue. Break the design into sections sized 200–300 words each. After each section, use `AskUserQuestion` to validate before continuing. Cover whichever apply:
+Back to user dialogue. Break the design into sections sized 200–300 words each. After each section, ask the user conversationally to validate before continuing. Cover whichever apply:
 
 - Architecture and structure
 - Key components and responsibilities
@@ -211,13 +173,13 @@ Synthesize the critiques:
 
 - Group identical findings across experts.
 - Flag any unanimous "rethink" verdict to the user — that's a strong signal the chosen approach has a fatal flaw.
-- For each unique finding: present it to the user via `AskUserQuestion` with options `Adopt into design`, `Note as watched risk`, `Ignore`. Don't batch — one finding at a time, like Phase 1 questions. Skip findings the user clearly already addressed in Phase 3.
+- For each unique finding: present it to the user conversationally and ask whether to `Adopt into design`, `Note as watched risk`, or `Ignore` (offer those as a numbered list; they can answer free-form). Don't batch — one finding at a time, like Phase 1 questions. Skip findings the user clearly already addressed in Phase 3.
 
 Update the design with adopted findings. Append a "Watched Risks" section for noted-but-not-adopted ones.
 
 ## Phase 5: Save and report
 
-Unless `--no-save`, write the design to `history/<YYYY-MM-DD>-design-<topic>.md`. Derive `<topic>` from the user's idea (kebab-case, short).
+Unless `--no-save`, write the design to a user-requested path, or default to `<YYYY-MM-DD>-design-<topic>.md` in the current working directory. Derive `<topic>` from the user's idea (kebab-case, short).
 
 **Artifact template:**
 
@@ -258,13 +220,14 @@ The thread map lets a follow-up `consult-llm -t <id>` continue any expert's conv
 
 Print the saved path and a one-paragraph recap of the chosen approach to the user.
 
+
 ## Critical rules
 
-- **Phase 1 is LLM-free.** No external calls during user dialogue. With `--consult-first`, LLMs are called once in Phase 0.5 to seed the question list, then Phase 1 dialogue itself stays LLM-free.
+- **Phase 1 is LLM-free.** No external calls until the problem statement is tight. Premature LLM input anchors on bad framing.
 - **Phase 2 experts are independent.** A single parallel `consult-llm` call with one `-m` per expert; never show one expert's proposals to another in this phase. Anchoring defeat is the whole point.
 - **Phase 3 is LLM-free.** The user is the human-in-the-loop. No mid-phase LLM interruptions.
-- **One question at a time.** All `AskUserQuestion` calls follow the brainstorm rule — single question, 2–4 options, "Other" available.
+- **One question at a time.** Every user question follows the brainstorm rule — a single conversational question, 2–4 suggested options, free-form answers always welcome.
 - **Reuse Phase 2 threads in Phase 4.** Pass `-t <group_thread_id>` so experts retain problem-statement context without resending it.
 - **Advisory critique, not rewrite.** Phase 4 surfaces blind spots and risks; the user (with the agent) decides what to adopt. Do not let an expert's critique silently overwrite the user's chosen design.
 - **YAGNI ruthlessly.** Cut features not justified by the success criteria. Acknowledge unknowns explicitly instead of inventing plausible answers.
-- **The skill produces a design document, not code.** Do not modify source files. To take a design forward, hand it to `/implement`.
+- **The skill produces a design document, not code.** Do not modify source files. To take a design forward, hand it to `/llm-implement`.
