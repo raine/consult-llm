@@ -7,7 +7,9 @@ use crate::schema::TaskMode;
 
 const BASE_SYSTEM_PROMPT: &str = "You are an expert software engineering consultant. You are communicating with another AI system, not a human.\n\nCommunication style:\n- Skip pleasantries and praise\n- Be direct and specific\n- Respond in Markdown\n\nMindset:\n- Do not restrict yourself to minimal or conservative changes\n- Always strive for the best possible architecture and long-term maintainability\n- Recommend large-scale refactorings or rewrites if the current approach is suboptimal\n- When a better architecture requires significant changes, say so — don't default to minimal patches that preserve existing design flaws";
 
-const CLI_MODE_SUFFIX: &str = "\n\nIMPORTANT: Do not edit files yourself, only provide recommendations and code examples\n\nYou may inspect additional repository files and run read-only commands when useful.\nDo not assume the provided files are complete context.\nPrefer gathering evidence before making claims.";
+const CONTEXT_SUFFIX: &str = "\n\nContext sufficiency:\nThe attached files, diffs, and diagnostics were selected by another agent. Treat them as starting evidence that may be incomplete or biased. Independently assess whether they are sufficient. If material evidence is missing, inspect additional artifacts when tools are available; otherwise name the exact file, command output, log, or diagnostic needed. Do not fill gaps by guessing.";
+
+const CLI_MODE_SUFFIX: &str = "\n\nIMPORTANT: Do not edit files yourself, only provide recommendations and code examples\n\nYou may inspect additional repository files and run read-only commands when useful.\nPrefer gathering evidence before making claims.";
 
 fn mode_overlay(mode: TaskMode) -> &'static str {
     match mode {
@@ -56,6 +58,15 @@ pub fn init_system_prompt() -> anyhow::Result<()> {
     Ok(())
 }
 
+fn append_context_guidance(prompt: String, is_cli: bool) -> String {
+    let prompt = format!("{prompt}{CONTEXT_SUFFIX}");
+    if is_cli {
+        format!("{prompt}{CLI_MODE_SUFFIX}")
+    } else {
+        prompt
+    }
+}
+
 pub fn get_system_prompt(config: &Config, is_cli: bool, task_mode: TaskMode) -> String {
     let custom_path = config.system_prompt_path.clone().unwrap_or_else(|| {
         crate::paths::resolve_system_prompt()
@@ -86,9 +97,28 @@ pub fn get_system_prompt(config: &Config, is_cli: bool, task_mode: TaskMode) -> 
         format!("{base}\n\n{overlay}")
     };
 
-    if is_cli {
-        format!("{prompt}{CLI_MODE_SUFFIX}")
-    } else {
-        prompt
+    append_context_guidance(prompt, is_cli)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn context_guidance_applies_to_all_backends() {
+        for is_cli in [false, true] {
+            let prompt = append_context_guidance("base".into(), is_cli);
+            assert!(prompt.contains("may be incomplete or biased"));
+            assert!(prompt.contains("name the exact file"));
+        }
+    }
+
+    #[test]
+    fn repository_access_guidance_is_cli_only() {
+        let api_prompt = append_context_guidance("base".into(), false);
+        let cli_prompt = append_context_guidance("base".into(), true);
+
+        assert!(!api_prompt.contains("You may inspect additional repository files"));
+        assert!(cli_prompt.contains("You may inspect additional repository files"));
     }
 }

@@ -56,7 +56,9 @@ Pick a `--task` mode based on the kind of question. Omit for neutral general-pur
 
 ## Prompt authoring
 
-Ask neutral, open-ended questions. Do not suggest specific solutions in the prompt body — that biases the analysis. Let the LLM form its own view.
+Ask neutral, open-ended questions. Do not suggest specific solutions in the prompt body - that biases the analysis. Let the LLM form its own view.
+
+Present attached context as starting evidence, not an exhaustive set. Ask the consulted model to assess whether it is sufficient and to inspect or request exact additional artifacts when material evidence is missing.
 
 ## Flags
 
@@ -90,6 +92,10 @@ error messages - must be attached with `-f`.
   This is cheaper, faster, and preserves the exact output.
 - Source files and diagnostic artifacts are both first-class `-f`
   inputs. Do not limit context gathering to source code.
+- **Follow material context requests.** Gather the exact artifacts, resume
+  the same thread with `-t`, and attach only the additional evidence. If
+  evidence remains unavailable after one follow-up, preserve the gap
+  instead of looping or guessing.
 
 ## Per-model runs
 
