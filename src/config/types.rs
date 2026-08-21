@@ -14,6 +14,7 @@ pub enum Backend {
     GrokCli,
     CursorCli,
     OpenCodeCli,
+    PiCli,
     ClaudeCli,
     Profile,
 }
@@ -27,6 +28,7 @@ impl Backend {
             "grok-cli" => Some(Backend::GrokCli),
             "cursor-cli" => Some(Backend::CursorCli),
             "opencode" => Some(Backend::OpenCodeCli),
+            "pi" => Some(Backend::PiCli),
             "claude-cli" => Some(Backend::ClaudeCli),
             "profile" => Some(Backend::Profile),
             _ => None,
@@ -41,6 +43,7 @@ impl Backend {
             Backend::GrokCli => "grok-cli",
             Backend::CursorCli => "cursor-cli",
             Backend::OpenCodeCli => "opencode",
+            Backend::PiCli => "pi",
             Backend::ClaudeCli => "claude-cli",
             Backend::Profile => "profile",
         }

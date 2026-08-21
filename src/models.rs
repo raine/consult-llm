@@ -23,6 +23,7 @@ pub enum Provider {
     Grok,
     OpenRouter,
     Zai,
+    Kimi,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -108,6 +109,9 @@ pub struct ProviderSpec {
     pub opencode_env: &'static str,
     /// Default opencode provider prefix (e.g. "openai").
     pub default_opencode_provider: &'static str,
+    /// pi provider name used to build `--model <provider>/<id>` for the `pi` backend
+    /// (e.g. "google" for gemini models, "xai" for grok models).
+    pub default_pi_provider: &'static str,
     /// Env var that carries the YAML-block `reasoning_effort` value, if this provider
     /// exposes one.
     pub reasoning_effort_env: Option<&'static str>,
@@ -129,6 +133,7 @@ pub const ALL_PROVIDERS: &[Provider] = &[
     Provider::Grok,
     Provider::OpenRouter,
     Provider::Zai,
+    Provider::Kimi,
 ];
 
 /// The provider registry. Order matters: `all_builtin_models()` flattens in this order,
@@ -163,9 +168,17 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: Some("GEMINI_BACKEND"),
         legacy_mode_env: Some("GEMINI_MODE"),
         cli_backend_value: Some("gemini-cli"),
-        allowed_backends: &["api", "gemini-cli", "cursor-cli", "opencode", "profile"],
+        allowed_backends: &[
+            "api",
+            "gemini-cli",
+            "cursor-cli",
+            "opencode",
+            "pi",
+            "profile",
+        ],
         opencode_env: "CONSULT_LLM_OPENCODE_GEMINI_PROVIDER",
         default_opencode_provider: "google",
+        default_pi_provider: "google",
         reasoning_effort_env: None,
         extra_args_env: Some("CONSULT_LLM_GEMINI_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_GEMINI_CLI_PROFILE",
@@ -188,9 +201,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "opencode", "profile"],
+        allowed_backends: &["api", "opencode", "pi", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_DEEPSEEK_PROVIDER",
         default_opencode_provider: "deepseek",
+        default_pi_provider: "deepseek",
         reasoning_effort_env: None,
         extra_args_env: None,
         cli_profile_env: "CONSULT_LLM_DEEPSEEK_CLI_PROFILE",
@@ -199,7 +213,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         provider: Provider::OpenAI,
         cursor_model_prefixes: &["gpt-", "composer-", "auto", "kimi-"],
         id: "openai",
-        model_prefixes: &["gpt-", "kimi-"],
+        model_prefixes: &["gpt-"],
         api_base_url: None,
         api_protocol: ApiProtocol::OpenAiCompat(OpenAiCompatRuntime {
             extra_body: None,
@@ -227,9 +241,17 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: Some("OPENAI_BACKEND"),
         legacy_mode_env: Some("OPENAI_MODE"),
         cli_backend_value: Some("codex-cli"),
-        allowed_backends: &["api", "codex-cli", "cursor-cli", "opencode", "profile"],
+        allowed_backends: &[
+            "api",
+            "codex-cli",
+            "cursor-cli",
+            "opencode",
+            "pi",
+            "profile",
+        ],
         opencode_env: "CONSULT_LLM_OPENCODE_OPENAI_PROVIDER",
         default_opencode_provider: "openai",
+        default_pi_provider: "openai",
         reasoning_effort_env: Some("CONSULT_LLM_CODEX_REASONING_EFFORT"),
         extra_args_env: Some("CONSULT_LLM_CODEX_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_OPENAI_CLI_PROFILE",
@@ -255,9 +277,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "opencode", "profile"],
+        allowed_backends: &["api", "opencode", "pi", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_MINIMAX_PROVIDER",
         default_opencode_provider: "minimax",
+        default_pi_provider: "minimax",
         reasoning_effort_env: None,
         extra_args_env: None,
         cli_profile_env: "CONSULT_LLM_MINIMAX_CLI_PROFILE",
@@ -277,9 +300,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "cursor-cli", "profile", "claude-cli"],
+        allowed_backends: &["api", "cursor-cli", "pi", "profile", "claude-cli"],
         opencode_env: "CONSULT_LLM_OPENCODE_ANTHROPIC_PROVIDER",
         default_opencode_provider: "anthropic",
+        default_pi_provider: "anthropic",
         reasoning_effort_env: Some("CONSULT_LLM_CLAUDE_REASONING_EFFORT"),
         extra_args_env: Some("CONSULT_LLM_CLAUDE_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_ANTHROPIC_CLI_PROFILE",
@@ -302,9 +326,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "grok-cli", "cursor-cli", "profile"],
+        allowed_backends: &["api", "grok-cli", "cursor-cli", "pi", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_GROK_PROVIDER",
         default_opencode_provider: "xai",
+        default_pi_provider: "xai",
         reasoning_effort_env: Some("CONSULT_LLM_GROK_REASONING_EFFORT"),
         extra_args_env: Some("CONSULT_LLM_GROK_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_GROK_CLI_PROFILE",
@@ -327,9 +352,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "opencode", "profile"],
+        allowed_backends: &["api", "opencode", "pi", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_OPENROUTER_PROVIDER",
         default_opencode_provider: "openrouter",
+        default_pi_provider: "openrouter",
         reasoning_effort_env: Some("CONSULT_LLM_OPENROUTER_REASONING_EFFORT"),
         extra_args_env: None,
         cli_profile_env: "CONSULT_LLM_OPENROUTER_CLI_PROFILE",
@@ -352,12 +378,39 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         legacy_backend_env: None,
         legacy_mode_env: None,
         cli_backend_value: None,
-        allowed_backends: &["api", "profile"],
+        allowed_backends: &["api", "pi", "profile"],
         opencode_env: "CONSULT_LLM_OPENCODE_ZAI_PROVIDER",
         default_opencode_provider: "zai",
+        default_pi_provider: "zai",
         reasoning_effort_env: None,
         extra_args_env: None,
         cli_profile_env: "CONSULT_LLM_ZAI_CLI_PROFILE",
+    },
+    ProviderSpec {
+        provider: Provider::Kimi,
+        cursor_model_prefixes: &[],
+        id: "kimi",
+        model_prefixes: &["kimi-"],
+        api_base_url: Some("https://api.kimi.com/coding/v1"),
+        api_protocol: ApiProtocol::OpenAiCompat(OpenAiCompatRuntime {
+            extra_body: None,
+            think_tags: None,
+        }),
+        builtin_models: &["kimi-k3", "kimi-k2.7-code"],
+        selector_priorities: &["kimi-k3", "kimi-k2.7-code"],
+        api_key_env: "KIMI_API_KEY",
+        base_url_env: "CONSULT_LLM_KIMI_BASE_URL",
+        backend_env: "CONSULT_LLM_KIMI_BACKEND",
+        legacy_backend_env: None,
+        legacy_mode_env: None,
+        cli_backend_value: None,
+        allowed_backends: &["api", "pi", "profile"],
+        opencode_env: "CONSULT_LLM_OPENCODE_KIMI_PROVIDER",
+        default_opencode_provider: "moonshot",
+        default_pi_provider: "moonshot",
+        reasoning_effort_env: None,
+        extra_args_env: None,
+        cli_profile_env: "CONSULT_LLM_KIMI_CLI_PROFILE",
     },
 ];
 
@@ -476,6 +529,8 @@ mod tests {
             ("grok-4.3", Provider::Grok),
             ("openrouter/auto", Provider::OpenRouter),
             ("glm-5.2", Provider::Zai),
+            ("kimi-k3", Provider::Kimi),
+            ("kimi-k2.7-code", Provider::Kimi),
         ];
 
         let builtins = all_builtin_models();
@@ -535,10 +590,20 @@ mod tests {
     }
 
     #[test]
-    fn kimi_api_models_route_to_openai_compatible_provider() {
+    fn kimi_api_models_route_to_kimi_provider() {
         for model in &["kimi-k2.5", "kimi-k3"] {
-            assert_eq!(Provider::from_model(model), Some(Provider::OpenAI));
+            assert_eq!(Provider::from_model(model), Some(Provider::Kimi));
         }
+    }
+
+    /// Cursor still serves kimi-* model IDs through its OpenAI-compatible gateway,
+    /// so cursor-reported kimi models keep routing to OpenAI (see #19).
+    #[test]
+    fn kimi_cursor_models_route_to_openai() {
+        assert_eq!(
+            Provider::from_cursor_model("kimi-k2.5"),
+            Some(Provider::OpenAI)
+        );
     }
 
     #[test]

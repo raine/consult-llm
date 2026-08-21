@@ -368,6 +368,7 @@ mod tests {
             Backend::GrokCli,
             Backend::CursorCli,
             Backend::OpenCodeCli,
+            Backend::PiCli,
             Backend::ClaudeCli,
             Backend::Profile,
         ];

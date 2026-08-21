@@ -611,9 +611,12 @@ zai:
   backend: profile
   cli_profile: claude-zai
   base_url: https://api.z.ai/api/coding/paas/v4
+kimi:
+  backend: pi
+  api_key: kimi-test
 "#;
         let cfg = ConfigFile::parse(yaml).expect("parses");
-        assert_eq!(cfg.providers.len(), 8);
+        assert_eq!(cfg.providers.len(), 9);
         for spec in PROVIDERS {
             assert!(
                 cfg.providers.contains_key(&spec.provider),
