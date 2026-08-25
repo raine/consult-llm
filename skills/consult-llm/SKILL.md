@@ -58,7 +58,31 @@ Pick a `--task` mode based on the kind of question. Omit for neutral general-pur
 
 Ask neutral, open-ended questions. Do not suggest specific solutions in the prompt body - that biases the analysis. Let the LLM form its own view.
 
-Present attached context as starting evidence, not an exhaustive set. Ask the consulted model to assess whether it is sufficient and to inspect or request exact additional artifacts when material evidence is missing.
+Present attached context as starting evidence, not an exhaustive set. The consulted model works from that evidence and may append a request for exact additional context when a material gap emerges during analysis.
+
+## Context request loop
+
+Apply this loop after every `consult-llm` response, before presenting, synthesizing, feeding it to another model, or acting on it.
+
+Every response is a bounded answer. An unfenced final `## Context request` section means the consultant found missing context that could materially change a stated conclusion. Each item identifies its kind, the exact context needed, and which conclusion it could change.
+
+1. For an `artifact` request, gather the exact file, command output, log, or diagnostic. Prefer raw output and attach it with `-f`.
+2. For a `clarification` request, answer from the caller's conversation context when possible. If only the user can answer, ask the user when the enclosing workflow permits interaction. Otherwise tell the consultant that the information is unavailable.
+3. Gather every requested item in the same follow-up, then resume only the requesting model's per-model thread with the same model and `-t <thread_id>`. Attach only the additional artifacts and provide any clarification inline. Use this continuation prompt:
+
+   ```text
+   Here is the requested context. Requested artifacts are attached where applicable.
+
+   [clarifications or unavailable items]
+
+   Revise your original answer using this context. Say plainly which conclusions change. If material uncertainty remains, state the unresolved gap. Do not issue another context request.
+   ```
+
+4. Perform at most one context follow-up per model per consultation stage. Treat the revised answer as final. If it still ends with a context request, preserve that request as unresolved uncertainty and continue the workflow without another round.
+
+For multi-model output, handle each requesting model independently using the thread ID from its section. Keep responses from models that did not request context. Do not resume the whole group just to satisfy one model.
+
+In web mode, ask the user to provide the requested context in the existing browser conversation and paste back the revised answer.
 
 ## Flags
 
@@ -92,10 +116,7 @@ error messages - must be attached with `-f`.
   This is cheaper, faster, and preserves the exact output.
 - Source files and diagnostic artifacts are both first-class `-f`
   inputs. Do not limit context gathering to source code.
-- **Follow material context requests.** Gather the exact artifacts, resume
-  the same thread with `-t`, and attach only the additional evidence. If
-  evidence remains unavailable after one follow-up, preserve the gap
-  instead of looping or guessing.
+- Follow material context requests using the bounded context request loop above.
 
 ## Per-model runs
 

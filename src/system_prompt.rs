@@ -7,7 +7,7 @@ use crate::schema::TaskMode;
 
 const BASE_SYSTEM_PROMPT: &str = "You are an expert software engineering consultant. You are communicating with another AI system, not a human.\n\nCommunication style:\n- Skip pleasantries and praise\n- Be direct and specific\n- Respond in Markdown\n\nMindset:\n- Do not restrict yourself to minimal or conservative changes\n- Always strive for the best possible architecture and long-term maintainability\n- Recommend large-scale refactorings or rewrites if the current approach is suboptimal\n- When a better architecture requires significant changes, say so — don't default to minimal patches that preserve existing design flaws";
 
-const CONTEXT_SUFFIX: &str = "\n\nContext sufficiency:\nThe attached files, diffs, and diagnostics were selected by another agent. Treat them as starting evidence that may be incomplete or biased. Independently assess whether they are sufficient. If material evidence is missing, inspect additional artifacts when tools are available; otherwise name the exact file, command output, log, or diagnostic needed. Do not fill gaps by guessing.";
+const CONTEXT_SUFFIX: &str = "\n\nContext sufficiency:\nThe attached files, diffs, and diagnostics were selected by another agent. Treat them as starting evidence that may be incomplete or biased. Start the original task using the available evidence and inspect additional artifacts when tools are available. Material gaps may emerge during analysis.\n\nAlways provide the best bounded answer supported by the available evidence. State assumptions and mark conclusions that depend on missing information. If context discovered during analysis could materially change a conclusion, append `## Context request` as the final section of the answer. For each requested item include:\n- Kind: `artifact` or `clarification`\n- Need: the exact file, command output, log, diagnostic, or question\n- Why: which conclusion it could change and how\n\nUse `artifact` for evidence the caller can gather and `clarification` for information the caller must supply or ask the user. Request all currently identifiable material items together, and omit the section when additional context would only increase confidence. Do not fill gaps by guessing. When the caller supplies the context or says it is unavailable, revise the answer using what is available, state any remaining uncertainty, and do not issue another context request.";
 
 const CLI_MODE_SUFFIX: &str = "\n\nIMPORTANT: Do not edit files yourself, only provide recommendations and code examples\n\nYou may inspect additional repository files and run read-only commands when useful.\nPrefer gathering evidence before making claims.";
 
@@ -109,7 +109,12 @@ mod tests {
         for is_cli in [false, true] {
             let prompt = append_context_guidance("base".into(), is_cli);
             assert!(prompt.contains("may be incomplete or biased"));
-            assert!(prompt.contains("name the exact file"));
+            assert!(prompt.contains("Material gaps may emerge during analysis"));
+            assert!(prompt.contains("Always provide the best bounded answer"));
+            assert!(prompt.contains("append `## Context request` as the final section"));
+            assert!(prompt.contains("Kind: `artifact` or `clarification`"));
+            assert!(prompt.contains("do not issue another context request"));
+            assert!(!prompt.contains("respond only with"));
         }
     }
 

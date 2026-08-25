@@ -54,10 +54,14 @@ Load it now. Follow its invocation contract for all CLI calls in this workflow.
 
 **`--browser`** — single call with `--web` (model flags are ignored in web mode).
 
-### 3. Present results
+### 3. Resolve context requests
+
+Before using the response, apply the loaded `consult-llm` skill's context request loop. If an answer ends with a context request, resume that model independently with the requested evidence and treat its revised answer as the consultation result.
+
+### 4. Present results
 
 - **Normal mode (single model):** summarize key insights, recommendations, and considerations.
-- **Normal mode (multiple models):** the CLI output already contains labeled per-model sections. Synthesize — highlight agreements, note disagreements, present a unified takeaway.
+- **Normal mode (multiple models):** the CLI output already contains labeled per-model sections. Synthesize by highlighting agreements, noting disagreements, and presenting a unified takeaway.
 - **Web mode:** inform the user the prompt was copied to clipboard and ask them to paste it into their browser-based LLM and share the response back.
 
 ## Critical rules
