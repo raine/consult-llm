@@ -108,8 +108,8 @@ fn handle_common_detail_key(key: &KeyEvent) -> Option<Action> {
         KeyCode::Char('u') => Some(Action::HalfPageUp),
         KeyCode::PageDown => Some(Action::PageDown),
         KeyCode::PageUp => Some(Action::PageUp),
-        KeyCode::Char('G') => Some(Action::ScrollToBottom),
-        KeyCode::Char('g') => Some(Action::ScrollToTop),
+        KeyCode::Char('G') | KeyCode::End => Some(Action::ScrollToBottom),
+        KeyCode::Char('g') | KeyCode::Home => Some(Action::ScrollToTop),
         KeyCode::Char('r') => Some(Action::ScrollToResponse),
         KeyCode::Char('y') => Some(Action::YankResponse),
         _ => None,
@@ -544,6 +544,30 @@ mod tests {
         // y=3 → visible idx=2 → data idx = 10+2 = 12
         let action = left_click(&state, &rows, 3);
         assert!(matches!(action, Some(Action::SelectActiveRow(12))));
+    }
+
+    #[test]
+    fn home_and_end_scroll_detail_to_bounds() {
+        assert!(matches!(
+            handle_detail_key(key(KeyCode::Home)),
+            Some(Action::ScrollToTop)
+        ));
+        assert!(matches!(
+            handle_detail_key(key(KeyCode::End)),
+            Some(Action::ScrollToBottom)
+        ));
+    }
+
+    #[test]
+    fn home_and_end_scroll_thread_detail_to_bounds() {
+        assert!(matches!(
+            handle_thread_detail_key(key(KeyCode::Home)),
+            Some(Action::ScrollToTop)
+        ));
+        assert!(matches!(
+            handle_thread_detail_key(key(KeyCode::End)),
+            Some(Action::ScrollToBottom)
+        ));
     }
 
     #[test]
