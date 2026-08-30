@@ -38,8 +38,8 @@ is cheap, and sometimes the other model is the one that finds the path forward.
 
 ## How it works
 
-1. Install skills into your agent (Claude Code, Codex, OpenCode)
-2. Trigger with a slash command: `/consult`, `/debate`, `/collab`
+1. Install skills into your agent (Claude Code, Codex, OpenCode, Pi)
+2. Trigger with `/consult`, `/debate`, or `/collab`. In Pi, use `/skill:consult`, `/skill:debate`, or `/skill:collab`
 3. The skill pipes your prompt into `consult-llm`, which calls the backend and streams the response back inline
 
 For the more detailed flow, [continue below](#how-it-really-works).
@@ -399,6 +399,14 @@ The CLI is invoked by your agent via the installed skills; you don't call it dir
 /consult what's the best way to model this state machine?
 /consult --gemini review this design for edge cases
 /debate should this be a separate service or stay in the monolith?
+```
+
+Pi exposes skills with the `skill:` prefix:
+
+```
+/skill:consult what's the best way to model this state machine?
+/skill:consult --gemini review this design for edge cases
+/skill:debate should this be a separate service or stay in the monolith?
 ```
 
 ### CLI utilities
@@ -1025,7 +1033,7 @@ If you like sequence diagrams, here's one for you:
 ```mermaid
 sequenceDiagram
     participant User
-    participant Agent as Host agent<br/>(Claude Code, Codex, OpenCode)
+    participant Agent as Host agent<br/>(Claude Code, Codex, OpenCode, Pi)
     participant Skill as Workflow skill<br/>(/consult, /debate, /collab)
     participant CLI as consult-llm CLI
     participant Config as Config resolver
@@ -1082,6 +1090,7 @@ Installs to all detected platforms. Target a specific one with `--platform`:
 consult-llm install-skills --platform claude
 consult-llm install-skills --platform opencode
 consult-llm install-skills --platform codex
+consult-llm install-skills --platform pi
 ```
 
 Platforms supported:
@@ -1089,6 +1098,7 @@ Platforms supported:
 - Claude Code: `~/.claude/skills/`
 - OpenCode: `~/.config/opencode/skills/`
 - Codex: `~/.codex/skills/`
+- Pi: `~/.pi/agent/skills/`
 
 ### Workflow skills
 

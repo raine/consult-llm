@@ -69,6 +69,7 @@ pub enum PlatformArg {
     Claude,
     Opencode,
     Codex,
+    Pi,
 }
 
 #[derive(clap::Args, Debug)]
@@ -108,6 +109,7 @@ fn all_platforms(home: &Path) -> Vec<Platform> {
             home.join(".config").join("opencode"),
         ),
         Platform::new("Codex", PlatformArg::Codex, home.join(".codex")),
+        Platform::new("Pi", PlatformArg::Pi, home.join(".pi").join("agent")),
     ]
 }
 
@@ -144,7 +146,7 @@ pub fn run(args: InstallSkillsArgs) -> anyhow::Result<()> {
 
     if detected.is_empty() {
         anyhow::bail!(
-            "no supported platforms detected (expected ~/.claude, ~/.config/opencode, or ~/.codex)"
+            "no supported platforms detected (expected ~/.claude, ~/.config/opencode, ~/.codex, or ~/.pi/agent)"
         );
     }
 
@@ -361,4 +363,22 @@ fn shrink_path(path: &Path, home: &Path) -> String {
     path.strip_prefix(home)
         .map(|rel| format!("~/{}", rel.display()))
         .unwrap_or_else(|_| path.display().to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn includes_pi_skill_directory() {
+        let home = Path::new("/home/tester");
+        let platforms = all_platforms(home);
+        let pi = platforms
+            .iter()
+            .find(|platform| platform.arg == PlatformArg::Pi)
+            .expect("Pi platform");
+
+        assert_eq!(pi.parent, home.join(".pi/agent"));
+        assert_eq!(pi.skills_dir, home.join(".pi/agent/skills"));
+    }
 }
