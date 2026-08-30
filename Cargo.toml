@@ -2,7 +2,7 @@
 members = [".", "crates/core", "crates/monitor"]
 
 [workspace.package]
-version = "3.0.30"
+version = "3.0.31"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/raine/consult-llm"

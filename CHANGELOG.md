@@ -1,8 +1,11 @@
 # Changelog
 
-## Unreleased
+## v3.0.31 (2026-08-30)
 
-- Added Pi as a CLI backend
+- Added Pi as a CLI backend for every model family, with multi-turn sessions and complete tool, usage, and cost telemetry.
+- Workflow skills can now be installed for Pi and invoked with Pi's `/skill:` commands.
+- Consultations can request one bounded round of missing context, helping workflows gather evidence and revise answers instead of guessing.
+- Monitor detail views now support Home and End for jumping to the top or bottom.
 
 ## v3.0.30 (2026-08-14)
 
