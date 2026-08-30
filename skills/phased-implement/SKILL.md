@@ -37,28 +37,17 @@ Parse these flags before starting:
 
 Everything else is the requested multi-phase implementation.
 
-Preset compilation:
+Preset semantics:
 
-```yaml
-light:
-  planning: note
-  plan_review: none
-  verification: light
-standard:
-  planning: rich
-  plan_review: narrow
-  verification: light
-design:
-  planning: consult-first
-  plan_review: full
-  verification: light
-strict:
-  planning: rich
-  plan_review: full
-  verification: full
-```
+- `light`: established local pattern, focused validation, no external review
+- `standard`: bounded implementation with acceptance evidence and applicable
+  runtime exercise
+- `design`: meaningful ownership, API, or architecture choice, with one
+  source-grounded technical-shape review
+- `strict`: real trust, persistence, protocol, migration, destructive,
+  concurrency, or FFI boundary, with boundary evidence and one final diff review
 
-Advanced master plans may override compiled fields per phase. Apply overrides after resolving the phase preset.
+Presets increase evidence, not planning or architecture.
 
 ## Required artifacts
 
@@ -75,7 +64,6 @@ history/<YYYY-MM-DD>-phased-<slug>/
 Required:
 
 - master phased plan at `history/<run>/plan.md`
-- per-phase plan or note, written by each phase through `/implement`
 - per-phase result sentinel at `history/<run>/captures/<phase-id>.result.md`
 - final summary at `history/<run>/summary.md`
 
@@ -145,9 +133,7 @@ phases:
     preset: design
     acceptance:
       - "Given a valid request, when the API is called, then it returns the new response shape."
-    planning: consult-first
-    plan_review: full
-    verification: light
+    validation: npm test -- tests/api
 ```
 
 ## Phase briefs
@@ -171,11 +157,8 @@ Required YAML fields per phase:
 - `preset`: `light`, `standard`, `design`, or `strict`
 - `acceptance`: list of acceptance criteria
 
-Optional compiled-field overrides:
+Optional field:
 
-- `planning`: `note`, `rich`, or `consult-first`
-- `plan_review`: `none`, `narrow`, or `full`
-- `verification`: `light` or `full`
 - `validation`: phase-specific validation command
 
 ## DAG validation
@@ -185,9 +168,7 @@ Before dispatch, validate the plan:
 - Every phase id is unique.
 - Every dependency names an existing phase.
 - The graph has no cycles.
-- Every phase has a preset.
-- Every preset resolves to compiled fields.
-- Overrides are valid enum values.
+- Every phase has a valid preset.
 - Every phase has acceptance criteria.
 - Phase briefs exist for every phase.
 - Phase path ownership is specific enough to detect obvious overlap.
@@ -209,7 +190,7 @@ Loop:
 3. If the ready set is empty and no phase is `working`, `done-unverified`, or `merging`, proceed to final integration validation.
 4. For each ready phase:
 
-   - Resolve preset and compiled fields.
+   - Resolve the preset and phase validation command.
    - Write `$PLAN_DIR/prompts/<phase-id>.md`.
    - Spawn a workmux worktree from the integration branch.
    - Track the workmux handle and set phase status to `working`.
@@ -270,9 +251,7 @@ You are implementing one phase in a workmux worktree.
 
 Run this implementation workflow:
 
-`/implement --preset <preset> --planning <planning> --plan-review <plan_review> --verification <verification> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
-
-If the local command interface does not accept compiled-field flags, include the compiled fields in the implementation request and keep the preset as the primary interface.
+`/implement --preset <preset> --parent-plan <master-plan-path> --validation '<phase-validation-command>' <phase description and acceptance>`
 
 ## Phase context
 
@@ -280,7 +259,6 @@ If the local command interface does not accept compiled-field flags, include the
 - Description: <description>
 - Paths: <paths>
 - Preset: `<preset>`
-- Compiled fields: planning=<planning>, plan_review=<plan_review>, verification=<verification>
 - Master plan: `<path>`
 - Dependencies: <dependencies>
 
@@ -302,14 +280,10 @@ Write `<plan-dir>/captures/<phase-id>.result.md`:
 status: success | blocked | failed
 phase_id: <phase-id>
 preset: light | standard | design | strict
-planning: note | rich | consult-first
-plan_review: none | narrow | full
-verification: light | full
 worktree: <workmux worktree name>
 base_commit: <sha>
 head_commit: <sha>
 commit: <sha>
-plan_or_note: <path>
 validation: <command>
 validation_status: passed | failed | skipped
 

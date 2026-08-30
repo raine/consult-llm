@@ -1,340 +1,262 @@
 ---
 name: implement
-description: Explicit preset-driven implementation workflow. Use only when the user invokes `/implement` or another skill explicitly delegates to it. Do not trigger for ordinary coding requests, straightforward follow-up edits, fixes with an established design, or requests to amend an existing commit.
+description: Explicit workflow for one bounded implementation using source-grounded discovery, a walking slice, evidence-gated review, validation, and commit. Use only when the user invokes `/implement` or another skill explicitly delegates to it. Do not trigger for ordinary coding requests, follow-up edits, fixes with an established design, or requests to amend an existing commit.
 allowed-tools: Bash, Glob, Grep, Read, Edit, Write
 ---
 
-Implement one bounded unit of work. Optimize for cheap execution by doing enough reasoning before edits that implementation can follow concrete instructions instead of inventing design, APIs, tests, or control flow.
+# Implement workflow
 
-## Argument handling
+Implement one bounded unit in the current worktree. Prefer the smallest complete
+change that satisfies the requested behavior. The current agent researches and
+implements the unit directly, so do not write the implementation twice as a
+code-bearing plan.
+
+Presets increase required evidence, not architecture, abstractions, tests, or
+documentation.
+
+## Arguments
 
 Arguments are `$ARGUMENTS`.
 
 Parse these flags before starting:
 
-- `--preset light|standard|design|strict`: workflow preset. Default: `standard`.
-- `--planning note|rich|consult-first`: override compiled planning mode.
-- `--plan-review none|narrow|full`: override compiled plan review mode.
-- `--verification light|full`: override compiled verification.
-- `--parent-plan <path>`: path to a master plan or phase brief.
-- `--reviewer <selector>`: reviewer selector for consult-llm. Repeatable.
-- `--reviewers <selector,selector>`: comma-separated reviewer selectors.
-- `--validation <command>`: expected validation command.
+- `--preset light|standard|design|strict`: default `standard`
+- `--parent-plan <path>`: authoritative scope or phase brief
+- `--reviewer <selector>`: consult-llm reviewer selector, repeatable
+- `--reviewers <selector,selector>`: comma-separated reviewer selectors
+- `--validation <command>`: expected validation command
 
-Everything else is the implementation request. Preserve it as the task statement.
+Everything else is the implementation request.
 
-If no preset is provided, use `standard`. Apply explicit compiled-field overrides after resolving the preset.
+Presets:
 
-Preset compilation:
+- `light`: an established local pattern, focused validation, no external review
+- `standard`: the default, acceptance evidence and runtime exercise where
+  applicable, no routine external review
+- `design`: a meaningful API, ownership, or architecture choice, with one
+  source-grounded technical-shape review before edits
+- `strict`: authentication, secrets, untrusted input, protocols, migrations,
+  persistence, destructive behavior, concurrency, or FFI, with boundary-focused
+  evidence and one final diff review
 
-```yaml
-light:
-  planning: note
-  plan_review: none
-  verification: light
-standard:
-  planning: rich
-  plan_review: narrow
-  verification: light
-design:
-  planning: consult-first
-  plan_review: full
-  verification: light
-strict:
-  planning: rich
-  plan_review: full
-  verification: full
-```
+Treat a component with a strict boundary as strict even when the selected preset
+is lighter. Strictness adds relevant proof. It does not justify speculative
+hardening.
 
-Do not ask the user during the workflow unless there is no safe way to continue. Use best judgment.
+Do not ask the user during the workflow unless continuing safely requires a
+material product choice, public or irreversible contract, dependency,
+durable-state change, trust-model change, unsafe overwrite, or major scope
+expansion.
 
-## Required artifacts
+## Working record
 
-Write artifacts under `history/` using today's date prefix.
+Keep at most one evolving implementation brief under `history/` with today's
+date prefix. A brief is required only when:
 
-Required:
+- the preset is `design` or `strict`
+- the caller explicitly requests one
+- discoveries are complex enough that a durable execution record prevents
+  mistakes
 
-- implementation note or rich implementation plan
-- final summary
+A sufficient parent plan replaces the brief. Add a local note only for material
+facts or deviations absent from the parent plan.
 
-Required only when `--parent-plan` is provided or the caller explicitly requests one:
-
-- result sentinel
-
-Optional:
-
-- external proposal capture
-- external review capture
-- debug notes
-
-Artifacts under `history/` are workflow records, not repository changes. Do not stage or commit them, even when they are required for the workflow or requested as sentinels. Leave them as uncommitted files unless the user explicitly asks to commit history artifacts.
-
-Do not create a feedback ledger. Before implementation starts, when review changes a plan, update the plan directly. After implementation starts, or when the worktree already contains source changes for this unit, do not rewrite the plan for minor review feedback. Append a short `Review feedback` section to the plan or note instead, then apply the needed amendments manually.
-
-## Phase A: snapshot and context
-
-1. Record the start commit:
-
-   ```bash
-   git rev-parse HEAD
-   ```
-
-2. Check the working tree before editing:
-
-   ```bash
-   git status --short
-   ```
-
-   Stop if unrelated uncommitted changes would make the work unsafe. Existing user changes may be present. Do not overwrite them.
-
-3. Gather context:
-
-   - Use Glob and Grep to find relevant files, callers, tests, fixtures, generated code, and configuration.
-   - Read enough code to understand current behavior and project idioms.
-   - Identify validation commands. Prefer project-local commands from docs, justfiles, package scripts, or existing test patterns.
-   - If a parent plan path is provided, read it and treat it as authoritative for scope.
-   - Keep scope to one implementation unit.
-
-4. Choose the validation command. If `--validation` was provided, use it unless it is plainly wrong. Otherwise choose the narrowest useful command plus any required project check.
-
-## Phase B: plan
-
-### Light planning
-
-For `planning: note`, write a compact implementation note:
+Use this compact shape when a brief is needed:
 
 ```markdown
-# <Feature> Implementation Note
+# Implement: <topic>
 
-**Goal:** <one sentence>
-**Preset:** light
-**Compiled fields:** planning=note, plan_review=none, verification=light
+**Goal:** <one observable outcome>
+**Preset:** <preset>
 **Parent plan:** <path or n/a>
-**Start commit:** <sha>
-**Validation:** `<command>`
+**Validation:** <commands>
 
-## Checklist
+## Scope
 
-- <concrete step>
+- In:
+- Out:
 
-## Acceptance criteria
+## Source facts
 
-- <criterion>
+- `<path>:<symbol>`: <ownership, contract, or convention>
+
+## Technical shape
+
+- Existing mechanisms to reuse:
+- Smallest complete slice:
+- Acceptance evidence:
+- Real trust or compatibility boundaries:
+- Stop conditions:
+
+## Accepted review findings
+
+- <only independently reproduced findings>
+
+## Result
+
+- Acceptance evidence:
+- Validation:
+- Commit:
+- Blockers:
 ```
 
-The note must include enough accountability to verify the result: checklist, acceptance criteria, and validation command.
+Do not pre-write source or test code in the brief. Do not create separate plans,
+proposal captures, feedback ledgers, or review transcripts. Update the brief only
+when scope, technical ownership, accepted evidence, or the result changes. Briefs
+are workflow records. Do not stage or commit them.
 
-### Rich planning
+A result sentinel is a separate artifact only when a parent plan or caller
+requires one.
 
-For `planning: rich`, research first and write a rich code-bearing plan:
+## 1. Establish facts
 
-````markdown
-# <Feature> Implementation Plan
+1. Read active repository instructions and relevant architecture documentation.
+2. Record `git rev-parse HEAD` and inspect `git status --short`.
+3. Stop before overwriting or unsafely entangling unrelated user changes.
+4. Read a supplied parent plan and treat its scope and acceptance criteria as
+   authoritative.
+5. Find the nearest existing implementation, callers, tests, configuration, and
+   runtime path. Prefer repository mechanisms over new ones.
+6. Define the observable outcome, explicit non-goals, smallest complete slice,
+   actual trust or compatibility boundaries, and acceptance evidence.
+7. Select the narrowest useful focused checks plus every repository-required
+   check. Use `--validation` unless it is plainly wrong.
 
-**Goal:** <one sentence>
-**Preset:** standard | design | strict
-**Compiled fields:** planning=<mode>, plan_review=<mode>, verification=<mode>
-**Parent plan:** <path or n/a>
-**Start commit:** <sha>
-**Approach:** <2-3 sentences>
-**Validation:** `<command>`
+Do not invent future consumers, extension points, defensive layers, or tests for
+unchanged framework behavior.
 
-## Requirements
+## 2. Review the technical shape when required
 
-- In scope:
-  - <item>
-- Out of scope:
-  - <item>
-- Acceptance criteria:
-  - <criterion>
+Skip this section unless the preset is `design`. A run receives at most one
+external review. Do not run a second review to approve corrections.
 
-## Context
+Before calling consult-llm, load the `consult-llm` skill and follow its invocation
+contract. Attach the brief or parent plan and focused source files. Use
+`--task review`, supplied reviewer selectors when present, the quoted heredoc
+terminator `__CONSULT_LLM_END__`, and Bash timeout `600000`.
 
-- `<file>`: <relevant behavior or pattern>
+Ask whether the technical shape demonstrably conflicts with source-established
+ownership, behavior, contracts, or trust boundaries. Do not ask for a replacement
+plan or general hardening advice.
 
-## Tasks
+Every reported finding must include:
 
-### Task 1: <short description>
+- **Claim:** the specific incorrect behavior, contradiction, or execution blocker
+- **Trigger:** the concrete input, state, caller, or plan step that exposes it
+- **Expected:** the acceptance criterion, existing contract, repository
+  convention, or real boundary requirement
+- **Actual:** the behavior the proposed shape would produce
+- **Evidence:** exact files and symbols plus a manual procedure, command, or
+  complete reachable source trace
+- **Smallest correction:** the minimum change that fixes the issue
+- **Verification:** the check that proves the correction
 
-**Files:**
+Tell the reviewer to return no findings when no issue meets this standard.
+General hardening, hypothetical edge cases, style preferences, alternative valid
+designs, and speculative callers are not findings.
 
-- Create: `path/to/file`
-- Modify: `path/to/file` lines 10-40
+Independently confirm each finding before accepting it. For a pre-implementation
+finding, compare the named plan step with the complete current source path and
+identify the exact contract or acceptance criterion that would fail. Reviewer
+assertions alone are not evidence.
 
-**Steps:**
+Ignore findings that cannot be reproduced, have no reachable trigger, protect no
+accepted behavior or real boundary, duplicate lower-layer guarantees, or ask for
+more hardening than the demonstrated issue requires. Record only accepted
+findings and their smallest corrections in the brief. Do not preserve rejected
+feedback in a ledger.
 
-1. Write or update the failing test.
-2. Run `<focused test>` and confirm the expected failure.
-3. Apply the source change.
-4. Run `<focused test>` and confirm it passes.
+## 3. Implement a walking slice
 
-**Code:**
+Implement serially in the current worktree:
 
-```language
-actual code, not placeholders
-```
+1. Build the thinnest complete path through existing owners.
+2. Reuse repository conventions before adding state, types, helpers, or error
+   layers.
+3. Add an early test only when it captures a demonstrated regression, pure
+   contract, parser, protocol invariant, or trust-boundary invariant needed to
+   make the slice safe.
+4. Compile or run the changed path as soon as it works.
+5. Add remaining tests only when they prove accepted behavior, platform behavior,
+   compatibility, a demonstrated regression, or a real trust boundary.
+6. Keep provisional APIs local and easy to reshape until a real second consumer
+   proves a broader boundary.
 
-**Tests:**
+Continue with best judgment when a correction preserves accepted behavior,
+reduces complexity, follows an existing convention, and stays within scope. Stop
+only when a stop condition from the opening section fires.
 
-```language
-actual test code, not placeholders
-```
+Revisit the technical shape when implementation introduces a generic mechanism,
+pass-through layer, one-consumer abstraction, unexplained convention deviation,
+or material scope growth. Prefer deletion or a smaller local form.
 
-**Validates:** <acceptance criterion>
+## 4. Exercise, simplify, and validate
 
-## Validation
+For every acceptance criterion, obtain concrete evidence from a focused test,
+manual reproduction, real process or application exercise, or source proof for a
+static contract.
 
-1. `<focused command>`
-2. `<final command>`
-````
+For `standard` and above, exercise the changed runtime path and one representative
+failure or constrained state when applicable. For strict components, verify only
+the relevant input, authorization, persistence, compatibility, error,
+cancellation, allocation, and destructive-state boundaries.
 
-Rules for rich plans:
+Audit the actual diff for:
 
-- Include exact files and paths.
-- Break work into small ordered tasks.
-- Include test-first steps whenever a test can be written.
-- Include actual code blocks for non-trivial source edits.
-- Include actual code blocks for non-trivial test edits.
-- Omit code only for mechanical replacements or generated content.
-- Prefer existing project patterns over new abstractions.
-- Include constraints from the parent plan or phase brief.
-- Do not include speculative future work.
-- Do not include rollout notes or transient comments in code.
+- unexplained scope growth or ownership changes
+- accidental overwrite of user changes
+- duplicated logic or tests
+- pass-through layers and single-consumer abstractions
+- tests of unchanged framework behavior
+- protections that must remain at real trust or compatibility boundaries
 
-### Consult-first planning
+Run all focused validation and repository-required checks.
 
-For `planning: consult-first`, load the `consult-llm` skill before any consult-llm CLI call. Then gather factual context and ask external LLMs for plan proposals before synthesizing the rich plan.
+### Conditional final diff review
 
-Use this prompt shape:
+Run one final diff review only for `strict`, or when the implementation materially
+diverges from the technical shape or changes a public or generic framework
+contract. If a `design` run already used its review, verify the diff directly
+instead. Never create a review cycle.
 
-```text
-We need an implementation plan for one bounded code change.
+Load the `consult-llm` skill and use the same invocation requirements from
+section 2. Attach the diff, acceptance criteria, and focused source context. Ask
+for deletion-first review and concrete correctness findings. Require every
+finding to use the Claim, Trigger, Expected, Actual, Evidence, Smallest
+correction, and Verification fields above.
 
-Task:
-<task statement>
+The reviewer must not report hypothetical failures, speculative compatibility,
+defense-in-depth without a real boundary, new extensibility, unchanged framework
+behavior, style preferences, or alternative valid designs. A minimality finding
+must identify exact code that serves no accepted behavior or real boundary.
 
-Scope constraints:
-<parent plan constraints, paths, acceptance criteria, out-of-scope items>
+Before changing code, independently reproduce each finding through the real entry
+point, a safe command, or a complete source trace from a real boundary to the
+failure. For unsafe or destructive triggers, source proof must demonstrate the
+reachable path and violated invariant without executing harm. For a minimality
+finding, confirm the existing owner or single consumer, apply the smallest safe
+deletion, and rerun the relevant evidence.
 
-Relevant facts from source:
-<brief factual summary with file paths>
+Apply only the smallest correction that resolves a reproduced issue. Ignore
+unreproduced suggestions. Do not request follow-up review. If a reproduced fix
+requires redesign or scope expansion, stop and report the blocker.
 
-Please propose a concrete implementation plan. Include exact files, ordered tasks, tests, validation commands, compatibility concerns, and edge cases. Include code snippets where they are important. Do not assume access to files beyond the attached context.
-```
+## 5. Commit and report
 
-Call consult-llm with file context, a quoted heredoc terminator, and a 10 minute timeout:
+Commit when acceptance evidence and required validation pass, no blocker remains,
+and repository instructions permit committing. Never commit workflow records.
 
-```bash
-cat <<'__CONSULT_LLM_END__' | consult-llm --task plan -f <file> -f <file>
-<prompt body>
-__CONSULT_LLM_END__
-```
-
-If reviewer selectors were supplied, pass one `-m <selector>` per selector. Otherwise omit `-m` so consult-llm applies configured `default_models` when present, then `default_model` or fallback. Always set Bash `timeout` to `600000`.
-
-Synthesize one rich implementation plan from the proposals and source evidence. Do not paste proposals blindly. The plan is the contract for execution.
-
-## Phase C: review the plan
-
-Skip this phase for `plan_review: none`.
-
-For `plan_review: narrow` or `full`, load the `consult-llm` skill before calling consult-llm. Attach the plan, relevant source files, tests, and parent plan if any. Use `--task review`. Use supplied reviewer selectors when present. Use the quoted heredoc terminator `__CONSULT_LLM_END__` and Bash timeout `600000`.
-
-### Narrow plan review prompt
-
-```text
-Review this implementation plan only for handoff quality.
-
-Check whether a cheaper execution agent can implement it correctly without inventing missing details. Focus on exact files, task order, code snippets, test-first steps, acceptance coverage, validation commands, phase scope boundaries, and vague instructions.
-
-Do not redesign the architecture unless the plan is plainly inconsistent or impossible.
-
-If something is missing, provide concrete replacement text, missing code blocks, missing tests, or task edits. Return only must-fix and should-fix feedback.
-```
-
-### Full plan review prompt
-
-```text
-Review this implementation plan for correctness, risk, and handoff quality.
-
-Include the narrow handoff checks: exact files, task order, code snippets, test-first steps, acceptance coverage, validation commands, phase scope boundaries, and vague instructions.
-
-Also check architecture, module boundaries, compatibility, public contracts, regression risk, edge cases, invariants, test adequacy, and security where relevant.
-
-If something is missing or wrong, provide concrete replacement text, missing code blocks, missing tests, or task edits. Return only actionable feedback.
-```
-
-Apply accepted feedback according to implementation state:
-
-- Before implementation starts, edit the plan directly when review feedback changes the execution contract.
-- After implementation starts, or when the worktree already contains source changes for this unit, do not churn the plan for minor amendments. Append a compact `Review feedback` section to the plan or note with the actionable items, then apply them manually during validation.
-- If feedback is wrong, ignore it.
-- If review materially changes the design before implementation starts, add this optional section:
+When a result sentinel is required, follow the caller's exact path and format.
+Write it after committing so its commit fields are final. If the caller supplies
+no format, use:
 
 ```markdown
-## Review changes applied
-
-- <short bullet>
-```
-
-Do not create a large feedback ledger.
-
-## Phase D: execute
-
-Implement directly from the note or plan.
-
-Rules:
-
-- Implement tasks in order.
-- Follow test-first steps when present.
-- Stop if the note or plan is wrong or underspecified in a way that changes scope.
-- Make small obvious corrections directly and update the note or plan.
-- Do not overwrite user changes.
-- Keep scope to this unit only.
-- If a correction changes design or scope, stop and report the blocker.
-- Do not stage or commit `history/` artifacts.
-- Write the result sentinel only when `--parent-plan` is provided or the caller explicitly requests one.
-
-## Phase E: validate and verify
-
-Run the selected validation command. Also run any focused tests from the plan.
-
-For `verification: light`, check:
-
-- validation passed
-- when a result sentinel is required, it exists and reports success
-- diff follows the note or plan
-- acceptance criteria are plausibly covered
-- no obvious scope drift, regression, or unsafe overwrite occurred
-
-For `verification: full`, check all light verification items plus:
-
-- compatibility with existing callers
-- public contract consistency
-- edge cases and error paths
-- test adequacy against acceptance criteria
-- regression risk across touched modules
-- security issues when relevant
-
-Only auto-fix localized must-fix issues with one clear answer. If a fix requires redesign or scope changes, stop and report the blocker.
-
-## Result sentinel
-
-Standalone `/implement` runs do not write a result sentinel. When `--parent-plan` is provided or the caller explicitly requests one, write or confirm a result sentinel under `history/` before committing:
-
-```markdown
-# Implementation Result: <feature>
+# Implementation Result: <topic>
 
 status: success | blocked | failed
-preset: light | standard | design | strict
-planning: note | rich | consult-first
-plan_review: none | narrow | full
-verification: light | full
-start_commit: <sha>
-end_commit: <sha or pending>
+head_commit: <sha or pending>
 commit: <sha or pending>
-plan_or_note: <path>
-validation: <command>
+validation: <commands>
 validation_status: passed | failed | skipped
 
 ## Summary
@@ -343,36 +265,24 @@ validation_status: passed | failed | skipped
 
 ## Acceptance
 
-- <criterion>: met | not met | unknown
+- <criterion>: met | not met | unknown, with evidence
 
 ## Blockers
 
 - <blocker or none>
 ```
 
-Update `end_commit` and `commit` after committing. This update still stays uncommitted when the sentinel is under `history/`.
-
-When no result sentinel is required, include the same status, validation, acceptance, and blocker facts in the final summary instead.
-
-## Phase F: commit and summarize
-
-Commit when validation passes, verification passes, no blockers remain, and you are confident the change is done.
-
-Commit rules:
-
-- Do not stage or commit `history/` artifacts.
-
-After committing, print the final summary:
+Report concisely:
 
 ```markdown
 ## Result
 
-- Preset: <preset>
-- Plan or note: `<path>`
-- Review: <none | narrow passed | full passed | blocker>
-- Validation: `<command>` <passed | failed | skipped>
-- Verification: <light | full> <passed | failed>
-- Commit: `<sha>`
-- Sentinel: `<path or n/a>`
-- Blockers: <none or list>
+- Outcome: <observable result>
+- Main implementation: <owners and mechanisms reused>
+- Acceptance evidence: <tests or runtime proof>
+- Review: <none | accepted reproduced findings | blocker>
+- Validation: <commands and results>
+- Commit: <sha or reason absent>
+- Remaining risks: <none or bounded demonstrated risks>
+- Sentinel: <path or n/a>
 ```
