@@ -151,6 +151,7 @@ fn backend_binary(backend: &str) -> Option<&'static str> {
         "cursor-cli" => Some("cursor-agent"),
         "opencode" => Some("opencode"),
         "claude-cli" => Some("claude"),
+        "pi" => Some("pi"),
         _ => None,
     }
 }
@@ -221,6 +222,7 @@ fn config_keys() -> Vec<&'static str> {
         keys.push(spec.base_url_env);
         keys.push(spec.cli_profile_env);
         keys.push(spec.opencode_env);
+        keys.push(spec.pi_provider_env);
         if let Some(env) = spec.reasoning_effort_env {
             keys.push(env);
         }
@@ -254,6 +256,9 @@ fn semantic_name(env_key: &str) -> String {
                 }
                 if k == spec.opencode_env {
                     return format!("opencode.{}.provider", spec.id);
+                }
+                if k == spec.pi_provider_env {
+                    return format!("{}.pi_provider", spec.id);
                 }
                 if Some(k) == spec.reasoning_effort_env {
                     return format!("{}.reasoning_effort", spec.id);
@@ -723,6 +728,11 @@ mod tests {
 
         assert!(ok);
         assert!(detail.contains("profile 'claude' command"));
+    }
+
+    #[test]
+    fn pi_backend_uses_pi_binary() {
+        assert_eq!(backend_binary("pi"), Some("pi"));
     }
 
     #[test]

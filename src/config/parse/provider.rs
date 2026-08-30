@@ -100,6 +100,10 @@ fn parse_provider_config(
         .or_else(|| opencode_global.clone())
         .unwrap_or_else(|| spec.default_opencode_provider.to_string());
 
+    let pi_provider = env(spec.pi_provider_env)
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| spec.default_pi_provider.to_string());
+
     let reasoning_effort = spec
         .reasoning_effort_env
         .and_then(env)
@@ -138,6 +142,7 @@ fn parse_provider_config(
         base_url,
         backend,
         opencode_provider,
+        pi_provider,
         reasoning_effort,
         env: provider_env,
         selected_cli_profile,
@@ -168,6 +173,19 @@ mod tests {
     use super::super::parse_config;
     use super::super::test_helpers::env_from;
     use super::*;
+
+    #[test]
+    fn test_parse_config_pi_backend_and_provider_override() {
+        let env = env_from(&[
+            ("CONSULT_LLM_OPENAI_BACKEND", "pi"),
+            ("CONSULT_LLM_PI_OPENAI_PROVIDER", "github-copilot"),
+        ]);
+        let (config, _) = parse_config(env).unwrap();
+
+        assert_eq!(config.backend_for(Provider::OpenAI), &Backend::PiCli);
+        assert_eq!(config.pi_provider_for(Provider::OpenAI), "github-copilot");
+        assert_eq!(config.pi_provider_for(Provider::Gemini), "google");
+    }
 
     #[test]
     fn test_parse_config_invalid_gemini_backend() {
@@ -369,6 +387,7 @@ mod tests {
             Backend::CursorCli,
             Backend::OpenCodeCli,
             Backend::ClaudeCli,
+            Backend::PiCli,
             Backend::Profile,
         ];
         for b in &backends {

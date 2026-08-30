@@ -44,6 +44,7 @@ pub struct ConfigFile {
 pub struct ProviderBlock {
     pub backend: Option<String>,
     pub opencode_provider: Option<String>,
+    pub pi_provider: Option<String>,
     pub reasoning_effort: Option<String>,
     pub api_key: Option<String>,
     /// Override the API base URL for the `api` backend (e.g. the z.ai
@@ -202,6 +203,16 @@ fn validate_provider_block(provider: Provider, block: &ProviderBlock) -> Result<
     if block.opencode_provider.is_some() && !spec.allowed_backends.contains(&"opencode") {
         return Err(format!(
             "unsupported provider field `opencode_provider` for provider `{}`",
+            spec.id
+        ));
+    }
+    if block
+        .pi_provider
+        .as_ref()
+        .is_some_and(|provider| provider.trim().is_empty())
+    {
+        return Err(format!(
+            "invalid key `{}.pi_provider`: provider name must be non-empty",
             spec.id
         ));
     }
@@ -399,6 +410,9 @@ impl ConfigFile {
             if let Some(v) = &block.opencode_provider {
                 m.insert(spec.opencode_env.to_string(), v.clone());
             }
+            if let Some(v) = &block.pi_provider {
+                m.insert(spec.pi_provider_env.to_string(), v.clone());
+            }
             if let (Some(env), Some(v)) = (spec.reasoning_effort_env, &block.reasoning_effort) {
                 m.insert(env.to_string(), v.clone());
             }
@@ -505,6 +519,22 @@ mod tests {
         assert!(msg.contains("anthropic"));
         assert!(msg.contains("opencode_provider"));
         assert!(msg.contains("unsupported"));
+    }
+
+    #[test]
+    fn test_parse_maps_pi_provider_to_env() {
+        let cfg =
+            ConfigFile::parse("openai:\n  backend: pi\n  pi_provider: github-copilot\n").unwrap();
+        let env = cfg.to_env_map(ApiKeyPolicy::Allow).unwrap();
+
+        assert_eq!(env["CONSULT_LLM_OPENAI_BACKEND"], "pi");
+        assert_eq!(env["CONSULT_LLM_PI_OPENAI_PROVIDER"], "github-copilot");
+    }
+
+    #[test]
+    fn test_parse_rejects_blank_pi_provider() {
+        let error = ConfigFile::parse("openai:\n  pi_provider: '  '\n").unwrap_err();
+        assert!(error.to_string().contains("pi_provider"));
     }
 
     #[test]

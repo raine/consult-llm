@@ -14,6 +14,7 @@ pub mod gemini_cli;
 pub mod grok_cli;
 pub mod opencode_cli;
 mod opencode_db;
+pub mod pi_cli;
 pub mod sse;
 pub mod stream;
 pub mod tag_splitter;

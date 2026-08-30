@@ -15,6 +15,7 @@ pub enum Backend {
     CursorCli,
     OpenCodeCli,
     ClaudeCli,
+    PiCli,
     Profile,
 }
 
@@ -28,6 +29,7 @@ impl Backend {
             "cursor-cli" => Some(Backend::CursorCli),
             "opencode" => Some(Backend::OpenCodeCli),
             "claude-cli" => Some(Backend::ClaudeCli),
+            "pi" => Some(Backend::PiCli),
             "profile" => Some(Backend::Profile),
             _ => None,
         }
@@ -42,6 +44,7 @@ impl Backend {
             Backend::CursorCli => "cursor-cli",
             Backend::OpenCodeCli => "opencode",
             Backend::ClaudeCli => "claude-cli",
+            Backend::PiCli => "pi",
             Backend::Profile => "profile",
         }
     }
@@ -54,6 +57,7 @@ pub struct ProviderRuntimeConfig {
     pub base_url: Option<String>,
     pub backend: Backend,
     pub opencode_provider: String,
+    pub pi_provider: String,
     pub reasoning_effort: Option<String>,
     pub env: std::collections::BTreeMap<String, String>,
     pub selected_cli_profile: Option<SelectedCliProfile>,
@@ -204,6 +208,11 @@ impl Config {
     /// Get the OpenCode provider prefix for a provider family.
     pub fn opencode_provider_for(&self, provider: Provider) -> &str {
         &self.providers[&provider].opencode_provider
+    }
+
+    /// Get the Pi provider used to disambiguate the requested model.
+    pub fn pi_provider_for(&self, provider: Provider) -> &str {
+        &self.providers[&provider].pi_provider
     }
 
     /// Get the configured reasoning effort for a provider, if any.

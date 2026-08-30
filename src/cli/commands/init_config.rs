@@ -11,6 +11,8 @@ const TEMPLATE: &str = r#"# consult-llm user config
 # openai:
 #   backend: codex-cli
 #   reasoning_effort: high
+#   # backend: pi
+#   # pi_provider: openai-codex
 # opencode:
 #   default_provider: copilot
 

@@ -104,6 +104,7 @@ pub(super) mod test_helpers {
                         base_url: None,
                         backend: backend.clone(),
                         opencode_provider: String::new(),
+                        pi_provider: String::new(),
                         reasoning_effort: None,
                         env: std::collections::BTreeMap::new(),
                         selected_cli_profile: None,
