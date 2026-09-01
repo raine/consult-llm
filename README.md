@@ -887,7 +887,10 @@ estimates show as zero for models without pricing data.
 | **MiniMax models**       |
 | `MiniMax-M2.7`           | $0.30/M | $1.20/M  |
 | **Anthropic models**     |
-| `claude-opus-4-7`        | $5.00/M | $25.00/M |
+| `claude-fable-5-1`       | $10.00/M | $50.00/M |
+| `claude-fable-5`         | $10.00/M | $50.00/M |
+| `claude-opus-5`          | $5.00/M  | $25.00/M |
+| `claude-opus-4-7`        | $5.00/M  | $25.00/M |
 | **Grok models**          |
 | `grok-4.3`               | $1.25/M | $2.50/M  |
 

@@ -47,6 +47,10 @@ fn get_pricing(model: &str) -> Option<ModelPricing> {
             input_per_million: 0.30,
             output_per_million: 1.20,
         },
+        "claude-fable-5-1" | "claude-fable-5" => ModelPricing {
+            input_per_million: 10.0,
+            output_per_million: 50.0,
+        },
         "claude-opus-5" | "claude-opus-4-7" => ModelPricing {
             input_per_million: 5.0,
             output_per_million: 25.0,
@@ -89,6 +93,22 @@ pub fn calculate_cost(prompt_tokens: u64, completion_tokens: u64, model: &str) -
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn prices_claude_fable_5_1() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "claude-fable-5-1");
+        assert!((cost.input_cost - 10.0).abs() < f64::EPSILON);
+        assert!((cost.output_cost - 50.0).abs() < f64::EPSILON);
+        assert!((cost.total_cost - 60.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn prices_claude_fable_5() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "claude-fable-5");
+        assert!((cost.input_cost - 10.0).abs() < f64::EPSILON);
+        assert!((cost.output_cost - 50.0).abs() < f64::EPSILON);
+        assert!((cost.total_cost - 60.0).abs() < f64::EPSILON);
+    }
 
     #[test]
     fn prices_claude_opus_5() {
