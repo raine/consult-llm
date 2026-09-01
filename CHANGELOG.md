@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.32 (2026-09-01)
+
+- Added Claude Fable 5.1 support
+
 ## v3.0.31 (2026-08-30)
 
 - Added Pi as a CLI backend for every model family, with multi-turn sessions and complete tool, usage, and cost telemetry.
