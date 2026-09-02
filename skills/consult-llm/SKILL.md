@@ -94,12 +94,16 @@ In web mode, ask the user to provide the requested context in the existing brows
 | `--task <mode>`              | Persona. See "Task modes" above.                                |
 | `--web`                      | Clipboard mode. See "Web mode" above.                           |
 | `--prompt-file <path>`       | Read prompt from file instead of stdin.                         |
-| `--diff-files <path>`        | Repeatable. Include git diff for this file as context.          |
-| `--diff-base <ref>`          | Base ref for diff (default `HEAD` — shows uncommitted changes). |
+| `--diff-files <path>`        | Repeatable. Provide git diff context for this file.             |
+| `--diff-base <ref>`          | Base ref for diff, default `HEAD` shows uncommitted changes.    |
 | `--diff-repo <path>`         | Repo path (default cwd).                                        |
 | `--run <spec>`               | Per-model run. See "Per-model runs" below.                      |
 
 Run `consult-llm --help` for the authoritative flag list.
+
+Diff context adapts to the resolved backend. API and web runs receive the diff
+contents. CLI runs receive the repository, base, and path scope, then inspect
+the diff with their read-only repository tools.
 
 ## File context (`-f`) best practices
 

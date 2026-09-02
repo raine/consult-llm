@@ -20,6 +20,22 @@ fn fence_for(content: &str) -> String {
     "`".repeat(max_run.max(2) + 1)
 }
 
+pub fn build_git_diff_inspection_prompt(
+    user_prompt: &str,
+    repo_path: Option<&str>,
+    base_ref: &str,
+    files: &[String],
+) -> String {
+    let spec = serde_json::json!({
+        "repo_path": repo_path.unwrap_or("."),
+        "base_ref": base_ref,
+        "files": files,
+    });
+    format!(
+        "## Git Diff\nInspect the requested git diff with read-only commands before answering. Resolve relative repository paths from the current working directory. Use this scope for the comparison:\n\n```json\n{spec}\n```\n\n{user_prompt}"
+    )
+}
+
 pub fn build_prompt(
     user_prompt: &str,
     files: &[(String, String)], // (path, content)
@@ -59,6 +75,23 @@ pub fn build_prompt(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn git_diff_inspection_prompt_describes_diff_without_embedding_it() {
+        let prompt = build_git_diff_inspection_prompt(
+            "review this",
+            Some("../project"),
+            "origin/main",
+            &["src/lib.rs".into(), "tests/review.rs".into()],
+        );
+
+        assert!(prompt.contains("Inspect the requested git diff"));
+        assert!(prompt.contains(r#""repo_path":"../project""#));
+        assert!(prompt.contains(r#""base_ref":"origin/main""#));
+        assert!(prompt.contains(r#""files":["src/lib.rs","tests/review.rs"]"#));
+        assert!(prompt.ends_with("review this"));
+        assert!(!prompt.contains("diff --git"));
+    }
 
     #[test]
     fn fence_avoids_collision_with_inner_backticks() {

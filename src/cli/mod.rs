@@ -39,7 +39,7 @@ pub struct Cli {
     #[arg(long = "prompt-file")]
     pub prompt_file: Option<String>,
 
-    /// Include git diff for these files (repeatable)
+    /// Provide git diff context for these files (repeatable)
     #[arg(long = "diff-files")]
     pub diff_files: Vec<String>,
 

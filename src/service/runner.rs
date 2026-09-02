@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use crate::config::Config;
-use crate::executors::types::{ExecutionRequest, LlmExecutor, Usage};
+use crate::executors::types::{ExecutionRequest, LlmExecutor, LlmExecutorCapabilities, Usage};
 use crate::llm_query::query_llm;
 use crate::logger::{log_prompt, log_response};
 use crate::schema::TaskMode;
@@ -17,6 +17,31 @@ pub struct SingleResult {
     pub thread_id: Option<String>,
     pub entry_index: Option<usize>,
     pub failed: bool,
+}
+
+fn build_model_prompt(
+    prompt: &str,
+    shared: &SharedInputs,
+    capabilities: &LlmExecutorCapabilities,
+) -> String {
+    if capabilities.is_cli
+        && let Some(args) = &shared.git_diff_args
+    {
+        crate::prompt_builder::build_git_diff_inspection_prompt(
+            prompt,
+            args.repo_path.as_deref(),
+            &args.base_ref,
+            &args.files,
+        )
+    } else if capabilities.supports_file_refs {
+        crate::prompt_builder::build_prompt(prompt, &[], shared.git_diff.as_deref())
+    } else {
+        crate::prompt_builder::build_prompt(
+            prompt,
+            &shared.context_files,
+            shared.git_diff.as_deref(),
+        )
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -67,23 +92,12 @@ pub fn run_single_model(
     };
     let spool = Arc::new(Mutex::new(RunSpool::new(meta)));
 
-    let (final_prompt, file_paths) = if !executor.capabilities().supports_file_refs {
-        (
-            crate::prompt_builder::build_prompt(
-                &prompt,
-                &shared.context_files,
-                shared.git_diff.as_deref(),
-            ),
-            None,
-        )
+    let capabilities = executor.capabilities();
+    let final_prompt = build_model_prompt(&prompt, shared, capabilities);
+    let file_paths = if capabilities.supports_file_refs {
+        shared.abs_file_paths.clone()
     } else {
-        let p = match &shared.git_diff {
-            Some(diff) if !diff.trim().is_empty() => {
-                format!("## Git Diff\n```diff\n{diff}\n```\n\n{prompt}")
-            }
-            _ => prompt.clone(),
-        };
-        (p, shared.abs_file_paths.clone())
+        None
     };
 
     log_prompt(&model, &final_prompt);
@@ -156,4 +170,50 @@ pub fn run_single_model(
         entry_index,
         failed: false,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::schema::GitDiffArgs;
+
+    fn shared_diff(repo_path: Option<&str>) -> SharedInputs {
+        SharedInputs {
+            context_files: vec![],
+            abs_file_paths: None,
+            git_diff: Some("diff --git a/src/lib.rs b/src/lib.rs\n+change".into()),
+            git_diff_args: Some(GitDiffArgs {
+                repo_path: repo_path.map(str::to_string),
+                files: vec!["src/lib.rs".into()],
+                base_ref: "origin/main".into(),
+            }),
+            raw_files: vec![],
+        }
+    }
+
+    #[test]
+    fn cli_inspects_diff_while_api_embeds_it() {
+        let cli = LlmExecutorCapabilities {
+            is_cli: true,
+            supports_threads: true,
+            supports_file_refs: true,
+        };
+        let api = LlmExecutorCapabilities {
+            is_cli: false,
+            supports_threads: true,
+            supports_file_refs: false,
+        };
+
+        let cli_prompt = build_model_prompt("review", &shared_diff(None), &cli);
+        assert!(cli_prompt.contains("Inspect the requested git diff"));
+        assert!(!cli_prompt.contains("diff --git"));
+
+        let api_prompt = build_model_prompt("review", &shared_diff(None), &api);
+        assert!(api_prompt.contains("diff --git"));
+
+        let external_repo_prompt =
+            build_model_prompt("review", &shared_diff(Some("/tmp/repo")), &cli);
+        assert!(external_repo_prompt.contains(r#""repo_path":"/tmp/repo""#));
+        assert!(!external_repo_prompt.contains("diff --git"));
+    }
 }

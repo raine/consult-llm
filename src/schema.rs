@@ -50,6 +50,6 @@ pub struct ConsultLlmArgs {
     pub web_mode: bool,
     /// Thread/session ID for resuming a conversation. Works with all backends. CLI backends maintain native sessions; API backends replay conversation history from disk. Returned in the response prefix as [thread_id:xxx].
     pub thread_id: Option<String>,
-    /// Generate git diff output to include as context. Shows uncommitted changes by default.
+    /// Provide git diff context. Repository-capable CLI backends inspect the requested diff directly; other backends receive its contents. Shows uncommitted changes by default.
     pub git_diff: Option<GitDiffArgs>,
 }

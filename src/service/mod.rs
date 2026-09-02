@@ -78,6 +78,7 @@ pub struct SharedInputs {
     /// Absolute file paths for CLI-mode executors.
     pub abs_file_paths: Option<Vec<PathBuf>>,
     pub git_diff: Option<String>,
+    pub git_diff_args: Option<GitDiffArgs>,
     pub raw_files: Vec<String>,
 }
 
@@ -111,6 +112,7 @@ fn build_shared_inputs_from_files(
         context_files,
         abs_file_paths,
         git_diff,
+        git_diff_args: git_diff_args.cloned(),
         raw_files: files.to_vec(),
     })
 }
