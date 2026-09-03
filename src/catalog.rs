@@ -190,8 +190,8 @@ mod tests {
     #[test]
     fn test_model_registry_resolve_openai_selector_prefers_gpt_5_6_sol() {
         let reg = ModelRegistry {
-            allowed_models: vec!["gpt-5.5".into(), "gpt-5.6-sol".into()],
-            fallback_model: "gpt-5.5".into(),
+            allowed_models: vec!["gpt-5.6-sol".into(), "gpt-6-astra".into()],
+            fallback_model: "gpt-6-astra".into(),
             default_model: None,
             default_models: vec![],
         };
