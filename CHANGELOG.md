@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.33 (2026-09-03)
+
+- Added GPT-6 Astra support.
+- CLI-backed consultations now inspect requested Git diffs directly, reducing prompt size for large reviews.
+
 ## v3.0.32 (2026-09-01)
 
 - Added Claude Fable 5.1 support
