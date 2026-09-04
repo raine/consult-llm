@@ -149,6 +149,7 @@ mod tests {
         let reg = ModelRegistry {
             allowed_models: vec![
                 "gpt-5.2".into(),
+                "gemini-3.8-flash".into(),
                 "gemini-3.1-pro-preview".into(),
                 "gemini-2.5-pro".into(),
             ],
@@ -159,7 +160,7 @@ mod tests {
         // "gemini" selector should resolve to best available
         assert_eq!(
             reg.resolve_model(Some("gemini")).unwrap(),
-            "gemini-3.1-pro-preview"
+            "gemini-3.8-flash"
         );
     }
 

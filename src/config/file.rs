@@ -496,11 +496,19 @@ mod tests {
 
     #[test]
     fn test_parse_rejects_unsupported_reasoning_effort_for_provider() {
-        let err = ConfigFile::parse("gemini:\n  reasoning_effort: high\n").unwrap_err();
+        let err = ConfigFile::parse("deepseek:\n  reasoning_effort: high\n").unwrap_err();
         let msg = err.to_string();
-        assert!(msg.contains("gemini"));
+        assert!(msg.contains("deepseek"));
         assert!(msg.contains("reasoning_effort"));
         assert!(msg.contains("unsupported"));
+    }
+
+    #[test]
+    fn test_parse_maps_gemini_reasoning_effort_to_env() {
+        let cfg = ConfigFile::parse("gemini:\n  reasoning_effort: high\n").unwrap();
+        let env = cfg.to_env_map(ApiKeyPolicy::Allow).unwrap();
+
+        assert_eq!(env["CONSULT_LLM_GEMINI_REASONING_EFFORT"], "high");
     }
 
     #[test]

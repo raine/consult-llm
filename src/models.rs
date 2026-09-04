@@ -155,8 +155,10 @@ pub static PROVIDERS: &[ProviderSpec] = &[
             "gemini-2.5-pro",
             "gemini-3-pro-preview",
             "gemini-3.1-pro-preview",
+            "gemini-3.8-flash",
         ],
         selector_priorities: &[
+            "gemini-3.8-flash",
             "gemini-3.1-pro-preview",
             "gemini-3-pro-preview",
             "gemini-2.5-pro",
@@ -179,7 +181,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         default_opencode_provider: "google",
         pi_provider_env: "CONSULT_LLM_PI_GEMINI_PROVIDER",
         default_pi_provider: "google",
-        reasoning_effort_env: None,
+        reasoning_effort_env: Some("CONSULT_LLM_GEMINI_REASONING_EFFORT"),
         extra_args_env: Some("CONSULT_LLM_GEMINI_EXTRA_ARGS"),
         cli_profile_env: "CONSULT_LLM_GEMINI_CLI_PROFILE",
     },
@@ -507,6 +509,7 @@ mod tests {
             ("gemini-2.5-pro", Provider::Gemini),
             ("gemini-3-pro-preview", Provider::Gemini),
             ("gemini-3.1-pro-preview", Provider::Gemini),
+            ("gemini-3.8-flash", Provider::Gemini),
             ("deepseek-v4-pro", Provider::DeepSeek),
             ("gpt-5.2", Provider::OpenAI),
             ("gpt-5.4", Provider::OpenAI),
@@ -639,7 +642,11 @@ mod tests {
                 assert!(!env.is_empty());
                 assert!(matches!(
                     spec.provider,
-                    Provider::OpenAI | Provider::Anthropic | Provider::Grok | Provider::OpenRouter
+                    Provider::Gemini
+                        | Provider::OpenAI
+                        | Provider::Anthropic
+                        | Provider::Grok
+                        | Provider::OpenRouter
                 ));
             }
             if let Some(env) = spec.extra_args_env {

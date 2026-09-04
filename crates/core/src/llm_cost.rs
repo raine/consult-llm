@@ -39,6 +39,10 @@ fn get_pricing(model: &str) -> Option<ModelPricing> {
             input_per_million: 2.0,
             output_per_million: 12.0,
         },
+        "gemini-3.8-flash" => ModelPricing {
+            input_per_million: 0.75,
+            output_per_million: 3.75,
+        },
         "deepseek-v4-pro" => ModelPricing {
             input_per_million: 0.55,
             output_per_million: 2.19,

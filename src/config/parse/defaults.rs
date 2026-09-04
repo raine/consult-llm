@@ -95,7 +95,7 @@ mod tests {
         let (config, _) = parse_config(env).unwrap();
         assert_eq!(
             config.default_models,
-            vec!["gpt-5.6-sol", "gemini-3.1-pro-preview", "gpt-5.6-sol"]
+            vec!["gpt-5.6-sol", "gemini-3.8-flash", "gpt-5.6-sol"]
         );
     }
 
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(registry.default_models, config.default_models);
         assert_eq!(
             registry.default_models,
-            vec!["gpt-5.6-sol", "gemini-3.1-pro-preview", "gpt-5.6-sol"]
+            vec!["gpt-5.6-sol", "gemini-3.8-flash", "gpt-5.6-sol"]
         );
     }
 }

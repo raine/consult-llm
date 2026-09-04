@@ -179,12 +179,14 @@ mod tests {
         let env = env_from(&[
             ("CONSULT_LLM_OPENAI_BACKEND", "pi"),
             ("CONSULT_LLM_PI_OPENAI_PROVIDER", "github-copilot"),
+            ("CONSULT_LLM_GEMINI_REASONING_EFFORT", "high"),
         ]);
         let (config, _) = parse_config(env).unwrap();
 
         assert_eq!(config.backend_for(Provider::OpenAI), &Backend::PiCli);
         assert_eq!(config.pi_provider_for(Provider::OpenAI), "github-copilot");
         assert_eq!(config.pi_provider_for(Provider::Gemini), "google");
+        assert_eq!(config.reasoning_effort_for(Provider::Gemini), Some("high"));
     }
 
     #[test]

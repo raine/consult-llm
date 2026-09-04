@@ -21,7 +21,7 @@
 
 `consult-llm` is a tool for getting a second opinion from another AI model,
 right inside your existing agent workflow. Use it to plan architecture,
-review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-6 Astra, Gemini 3.1 Pro, Claude Opus 4.7,
+review changes, debate approaches, or get unstuck on tricky bugs. It supports GPT-6 Astra, Gemini 3.8 Flash, Claude Opus 4.7,
 DeepSeek V4 Pro, MiniMax M2.7, Grok 4.6, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
 multi-turn threads, git diff context, web-mode clipboard export, and a live monitor TUI.
 
@@ -792,12 +792,13 @@ If `default_models` names a model excluded by `allowed_models`, config loading f
 Example `~/.config/consult-llm/config.yaml`:
 
 ```yaml
-allowed_models: [gemini-3.1-pro-preview, gpt-5.6-sol, grok-4.6]
+allowed_models: [gemini-3.8-flash, gpt-5.6-sol, grok-4.6]
 default_model: gpt-5.6-sol
 default_models: [gpt-5.6-sol, gpt-5.6-sol]
 
 gemini:
   backend: gemini-cli
+  reasoning_effort: high
 
 openai:
   backend: codex-cli
@@ -882,6 +883,7 @@ estimates show as zero for models without pricing data.
 | `gemini-2.5-pro`         | $1.25/M | $10.00/M |
 | `gemini-3-pro-preview`   | $2.00/M | $12.00/M |
 | `gemini-3.1-pro-preview` | $2.00/M | $12.00/M |
+| `gemini-3.8-flash`       | $0.75/M | $3.75/M  |
 | **DeepSeek models**      |
 | `deepseek-v4-pro`        | $0.55/M | $2.19/M  |
 | **MiniMax models**       |
@@ -941,6 +943,7 @@ Environment variables override config file values.
 | `CONSULT_LLM_EXTRA_MODELS`                 | Comma-separated extra model IDs to add to the catalog                                   | model IDs                                            |                                                      |
 | `CONSULT_LLM_CODEX_REASONING_EFFORT`       | Reasoning effort for Codex CLI backend                                                  | `none` `minimal` `low` `medium` `high` `xhigh`       | `high`                                               |
 | `CONSULT_LLM_CODEX_EXTRA_ARGS`             | Extra CLI args appended to `codex exec` (shell-quoted)                                  | e.g. `--dangerously-bypass-approvals-and-sandbox`    |                                                      |
+| `CONSULT_LLM_GEMINI_REASONING_EFFORT`      | Reasoning effort for Gemini API, OpenCode, and Pi backends                              | `low` `medium` `high`                                | unset                                                |
 | `CONSULT_LLM_GEMINI_EXTRA_ARGS`            | Extra CLI args appended to `gemini` (shell-quoted)                                      | shell-quoted args                                    |                                                      |
 | `CONSULT_LLM_GROK_REASONING_EFFORT`        | Reasoning effort for Grok CLI and API backends                                          | `low` `medium` `high`                                | unset                                                |
 | `CONSULT_LLM_GROK_EXTRA_ARGS`              | Extra CLI args appended to `grok` (shell-quoted)                                        | shell-quoted args                                    |                                                      |
