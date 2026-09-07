@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.34 (2026-09-07)
+
+- Added Gemini 3.8 Flash support with cost estimates, with the `gemini` selector preferring it when available.
+- Gemini consultations support configurable reasoning effort with API, OpenCode, and Pi backends.
+
 ## v3.0.33 (2026-09-03)
 
 - Added GPT-6 Astra support.
