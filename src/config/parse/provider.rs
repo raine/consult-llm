@@ -272,8 +272,6 @@ mod tests {
         let (config, registry) = parse_config(env).unwrap();
         assert!(config.allowed_models.contains(&"grok-4.7".to_string()));
         assert!(config.allowed_models.contains(&"grok-4.6".to_string()));
-        assert!(config.allowed_models.contains(&"grok-4.5".to_string()));
-        assert!(config.allowed_models.contains(&"grok-4.3".to_string()));
         assert_eq!(config.providers[&Provider::Grok].backend, Backend::Api);
         assert_eq!(registry.resolve_model(Some("grok")).unwrap(), "grok-4.7");
         assert!(config.default_models.is_empty());
@@ -283,7 +281,7 @@ mod tests {
     fn test_parse_config_without_grok_key_filters_grok() {
         let env = env_from(&[("OPENAI_API_KEY", "key")]);
         let (config, _) = parse_config(env).unwrap();
-        assert!(!config.allowed_models.contains(&"grok-4.3".to_string()));
+        assert!(!config.allowed_models.contains(&"grok-4.7".to_string()));
     }
 
     #[test]

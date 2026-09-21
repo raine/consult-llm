@@ -246,7 +246,7 @@ mod tests {
         let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
         let provider = ExecutorProvider::new(Arc::new(config));
         let executor = provider
-            .get_executor("grok-4.5")
+            .get_executor("grok-4.6")
             .expect("should create grok cli executor");
         assert_eq!(executor.backend_name(), "grok_cli");
     }
@@ -260,9 +260,9 @@ mod tests {
         let (config, _) = parse_config_with_cli_profiles(env, test_cli_profiles()).unwrap();
         let provider = ExecutorProvider::new(Arc::new(config));
         let executor = provider
-            .get_executor("grok-4.5")
+            .get_executor("grok-4.6")
             .expect("should create grok cli executor");
-        assert_eq!(executor.reasoning_effort("grok-4.5"), Some("high"));
+        assert_eq!(executor.reasoning_effort("grok-4.6"), Some("high"));
     }
 
     #[test]
