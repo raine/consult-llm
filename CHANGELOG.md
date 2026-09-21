@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.35 (2026-09-21)
+
+- Added Grok 4.7 support, with the `grok` selector now preferring it. Grok 4.5 and 4.3 are no longer built-in models.
+- Tool-enabled consultants now inspect accessible context themselves before asking callers to provide it.
+
 ## v3.0.34 (2026-09-07)
 
 - Added Gemini 3.8 Flash support with cost estimates, with the `gemini` selector preferring it when available.
