@@ -302,6 +302,7 @@ mod tests {
                 "claude-fable-5",
                 "claude-opus-5",
                 "claude-opus-4-7",
+                "grok-4.7",
                 "grok-4.6",
                 "grok-4.5",
                 "grok-4.3",
