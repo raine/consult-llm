@@ -253,6 +253,15 @@ mod tests {
                 .allowed_models
                 .contains(&"claude-fable-5".to_string())
         );
+        assert!(
+            config
+                .allowed_models
+                .contains(&"claude-opus-5-5".to_string())
+        );
+        assert_eq!(
+            registry.resolve_model(Some("claude-opus-5-5")).unwrap(),
+            "claude-opus-5-5"
+        );
         assert!(config.allowed_models.contains(&"claude-opus-5".to_string()));
         assert!(
             config

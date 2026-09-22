@@ -302,12 +302,14 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         builtin_models: &[
             "claude-fable-5-1",
             "claude-fable-5",
+            "claude-opus-5-5",
             "claude-opus-5",
             "claude-opus-4-7",
         ],
         selector_priorities: &[
             "claude-fable-5-1",
             "claude-fable-5",
+            "claude-opus-5-5",
             "claude-opus-5",
             "claude-opus-4-7",
         ],
@@ -521,6 +523,7 @@ mod tests {
             ("MiniMax-M2.7", Provider::MiniMax),
             ("claude-fable-5-1", Provider::Anthropic),
             ("claude-fable-5", Provider::Anthropic),
+            ("claude-opus-5-5", Provider::Anthropic),
             ("claude-opus-5", Provider::Anthropic),
             ("claude-opus-4-7", Provider::Anthropic),
             ("grok-4.7", Provider::Grok),

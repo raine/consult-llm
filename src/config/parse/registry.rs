@@ -300,6 +300,7 @@ mod tests {
                 "MiniMax-M2.7",
                 "claude-fable-5-1",
                 "claude-fable-5",
+                "claude-opus-5-5",
                 "claude-opus-5",
                 "claude-opus-4-7",
                 "grok-4.7",
