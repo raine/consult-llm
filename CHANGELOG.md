@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.36 (2026-09-22)
+
+- Added Claude Opus 5.5 support.
+
 ## v3.0.35 (2026-09-21)
 
 - Added Grok 4.7 support, with the `grok` selector now preferring it. Grok 4.5 and 4.3 are no longer built-in models.
