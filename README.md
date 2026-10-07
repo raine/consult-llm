@@ -789,6 +789,14 @@ Model selection has three layers:
 
 If `default_models` names a model excluded by `allowed_models`, config loading fails instead of silently using it.
 
+A selector such as `anthropic` resolves to the best enabled model of that family by a built-in priority order. Set `<provider>.selector_model` to make the selector resolve to a specific model instead. Other models of the family stay available by exact ID:
+
+```bash
+consult-llm config set anthropic.selector_model claude-opus-5-5
+```
+
+The model must be an enabled model of that provider, otherwise config loading fails.
+
 Example `~/.config/consult-llm/config.yaml`:
 
 ```yaml
@@ -928,6 +936,7 @@ Environment variables override config file values.
 | `CONSULT_LLM_<PROVIDER>_BASE_URL`          | Override the API base URL for a provider's `api` backend (e.g. `CONSULT_LLM_ZAI_BASE_URL` for the Z.AI coding-plan endpoint) | URL                                                  | registry default                                     |
 | `CONSULT_LLM_DEFAULT_MODEL`                | Model or selector to use for single-response calls when `-m` is omitted                 | selector or exact model ID                           | first available                                      |
 | `CONSULT_LLM_DEFAULT_MODELS`               | Comma-separated ordered multi-model defaults when `-m` is omitted; duplicates preserved | selectors or exact model IDs                         | empty (falls through to default_model then fallback) |
+| `CONSULT_LLM_<PROVIDER>_SELECTOR_MODEL`    | Model the provider selector resolves to, replacing the built-in priority order          | exact model ID of that provider                      | built-in priority                                    |
 | `CONSULT_LLM_GEMINI_BACKEND`               | Backend for Gemini models                                                               | `api` `gemini-cli` `cursor-cli` `opencode` `pi` `profile` | `api`                                                |
 | `CONSULT_LLM_OPENAI_BACKEND`               | Backend for OpenAI models                                                               | `api` `codex-cli` `cursor-cli` `opencode` `pi` `profile`  | `api`                                                |
 | `CONSULT_LLM_DEEPSEEK_BACKEND`             | Backend for DeepSeek models                                                             | `api` `opencode` `pi` `profile`                           | `api`                                                |

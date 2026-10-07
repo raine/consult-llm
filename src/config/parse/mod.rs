@@ -30,8 +30,11 @@ pub fn parse_config_with_cli_profiles(
     let providers = provider::parse_all_providers(&env, &cli_profiles)?;
     let enabled_models = registry::resolve_enabled_models(&env, &providers)?;
 
-    let resolved_default = defaults::resolve_default_model(&env, &enabled_models)?;
-    let resolved_default_models = defaults::resolve_default_models(&env, &enabled_models)?;
+    let selector_models = defaults::resolve_selector_models(&env, &enabled_models)?;
+    let resolved_default =
+        defaults::resolve_default_model(&env, &enabled_models, &selector_models)?;
+    let resolved_default_models =
+        defaults::resolve_default_models(&env, &enabled_models, &selector_models)?;
 
     let api_idle_timeout = env::resolve_api_idle_timeout(&env);
     let codex_reasoning_effort = env::resolve_codex_reasoning_effort(&env)?;
@@ -69,8 +72,12 @@ pub fn parse_config_with_cli_profiles(
         cli_profiles,
     };
 
-    let registry =
-        registry::build_registry(enabled_models, resolved_default, resolved_default_models);
+    let registry = registry::build_registry(
+        enabled_models,
+        resolved_default,
+        resolved_default_models,
+        selector_models,
+    );
 
     Ok((config, registry))
 }

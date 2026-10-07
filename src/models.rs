@@ -476,6 +476,15 @@ pub fn all_builtin_models() -> Vec<&'static str> {
         .collect()
 }
 
+/// Env var carrying a provider's `selector_model` override
+/// (e.g. "CONSULT_LLM_ANTHROPIC_SELECTOR_MODEL").
+pub fn selector_model_env(provider_id: &str) -> String {
+    format!(
+        "CONSULT_LLM_{}_SELECTOR_MODEL",
+        provider_id.to_ascii_uppercase()
+    )
+}
+
 /// Iterate (selector_id, priority_list) for every provider in registry order.
 /// Drives selector resolution in `catalog::resolve_selector` and selector listings
 /// in error messages.

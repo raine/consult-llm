@@ -284,6 +284,11 @@ pub enum ConfigError {
         raw: String,
         allowed: Vec<String>,
     },
+    InvalidSelectorModel {
+        key: String,
+        model: String,
+        allowed: Vec<String>,
+    },
 }
 
 struct QuotedOptions<'a>(&'a [String]);
@@ -375,6 +380,15 @@ impl fmt::Display for ConfigError {
             ConfigError::InvalidCliProfileReference { key, raw, allowed } => write!(
                 f,
                 "Invalid environment variables:\n  {key}: Invalid CLI profile '{raw}'. Expected one of: {}",
+                QuotedOptions(allowed)
+            ),
+            ConfigError::InvalidSelectorModel {
+                key,
+                model,
+                allowed,
+            } => write!(
+                f,
+                "Invalid environment variables:\n  {key}: Invalid model '{model}'. Expected an enabled model of this provider: {}",
                 QuotedOptions(allowed)
             ),
         }

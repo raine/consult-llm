@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::models::selector_priorities;
 
 /// Single source of truth for model availability — drives both schema and validation
@@ -7,6 +9,8 @@ pub struct ModelRegistry {
     pub fallback_model: String,
     pub default_model: Option<String>,
     pub default_models: Vec<String>,
+    /// Configured selector -> model overrides that replace the built-in priority order.
+    pub selector_models: HashMap<String, String>,
 }
 
 impl ModelRegistry {
@@ -28,7 +32,7 @@ impl ModelRegistry {
             }
         };
 
-        resolve_selector(target, &self.allowed_models).ok_or_else(|| {
+        resolve_selector(target, &self.allowed_models, &self.selector_models).ok_or_else(|| {
             let selectors: Vec<&str> = selector_priorities().map(|(s, _)| s).collect();
             crate::errors::AppError::InvalidParams(format!(
                 "Invalid model or selector '{target}'. Selectors: {}. Available models: {}",
@@ -41,13 +45,24 @@ impl ModelRegistry {
 
 /// Resolve a model string as either an exact model ID or an abstract selector.
 /// Returns the concrete model ID if found in `allowed_models`, or None.
-pub fn resolve_selector(target: &str, allowed_models: &[String]) -> Option<String> {
+pub fn resolve_selector(
+    target: &str,
+    allowed_models: &[String],
+    selector_models: &HashMap<String, String>,
+) -> Option<String> {
     // 1. Exact match
     if allowed_models.iter().any(|m| m == target) {
         return Some(target.to_string());
     }
 
-    // 2. Selector match — first available model from priority list
+    // 2. Configured selector override
+    if let Some(model) = selector_models.get(target)
+        && allowed_models.contains(model)
+    {
+        return Some(model.clone());
+    }
+
+    // 3. Selector match — first available model from priority list
     if let Some((_, priorities)) = selector_priorities().find(|(s, _)| *s == target) {
         return priorities
             .iter()
@@ -137,6 +152,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         assert_eq!(
             reg.resolve_model(Some("gemini-2.5-pro")).unwrap(),
@@ -156,6 +172,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         // "gemini" selector should resolve to best available
         assert_eq!(
@@ -171,6 +188,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         // "gemini" selector should skip gemini-3.1-pro-preview (not in allowed) and pick gemini-2.5-pro
         assert_eq!(reg.resolve_model(Some("gemini")).unwrap(), "gemini-2.5-pro");
@@ -183,6 +201,7 @@ mod tests {
             fallback_model: "gpt-5.4".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         // "openai" selector should resolve to highest priority: gpt-5.4
         assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-5.4");
@@ -195,6 +214,7 @@ mod tests {
             fallback_model: "gpt-6-astra".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
 
         assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-5.6-sol");
@@ -207,6 +227,7 @@ mod tests {
             fallback_model: "gpt-5.3-codex".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         // When only codex models available, "openai" should still resolve
         assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-5.3-codex");
@@ -219,6 +240,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: Some("gemini-2.5-pro".into()),
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         assert_eq!(reg.resolve_model(None).unwrap(), "gemini-2.5-pro");
     }
@@ -230,6 +252,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         assert_eq!(reg.resolve_model(None).unwrap(), "gpt-5.2");
     }
@@ -241,6 +264,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: HashMap::new(),
         };
         assert!(reg.resolve_model(Some("invalid")).is_err());
     }
@@ -249,7 +273,7 @@ mod tests {
     fn test_resolve_selector_exact_match() {
         let allowed = vec!["gpt-5.2".into(), "gemini-2.5-pro".into()];
         assert_eq!(
-            resolve_selector("gpt-5.2", &allowed),
+            resolve_selector("gpt-5.2", &allowed, &HashMap::new()),
             Some("gpt-5.2".into())
         );
     }
@@ -258,7 +282,7 @@ mod tests {
     fn test_resolve_selector_selector_match() {
         let allowed = vec!["gemini-3.1-pro-preview".into(), "gemini-2.5-pro".into()];
         assert_eq!(
-            resolve_selector("gemini", &allowed),
+            resolve_selector("gemini", &allowed, &HashMap::new()),
             Some("gemini-3.1-pro-preview".into())
         );
     }
@@ -266,6 +290,6 @@ mod tests {
     #[test]
     fn test_resolve_selector_no_match() {
         let allowed = vec!["gpt-5.2".into()];
-        assert_eq!(resolve_selector("gemini", &allowed), None);
+        assert_eq!(resolve_selector("gemini", &allowed, &HashMap::new()), None);
     }
 }

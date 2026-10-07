@@ -3,7 +3,7 @@ use serde::de::{Deserializer, Error as DeError};
 use serde_yaml::Value;
 use std::collections::{BTreeMap, HashMap};
 
-use crate::models::{PROVIDERS, Provider};
+use crate::models::{PROVIDERS, Provider, selector_model_env};
 
 use super::types::CliProfile;
 
@@ -60,6 +60,9 @@ pub struct ProviderBlock {
     pub extra_args: Option<String>,
     /// Name of a CLI profile to use when the backend is profile-backed.
     pub cli_profile: Option<String>,
+    /// Exact model ID the provider selector (e.g. `-m anthropic`) resolves to,
+    /// replacing the built-in priority order.
+    pub selector_model: Option<String>,
 }
 
 #[derive(Debug, Default, Deserialize)]
@@ -422,6 +425,9 @@ impl ConfigFile {
             if let Some(v) = &block.cli_profile {
                 m.insert(spec.cli_profile_env.to_string(), v.clone());
             }
+            if let Some(v) = &block.selector_model {
+                m.insert(selector_model_env(spec.id), v.clone());
+            }
         }
 
         // Reject literal env values in CLI profiles in project config.
@@ -501,6 +507,16 @@ mod tests {
         assert!(msg.contains("deepseek"));
         assert!(msg.contains("reasoning_effort"));
         assert!(msg.contains("unsupported"));
+    }
+
+    #[test]
+    fn test_parse_maps_selector_model_to_env() {
+        let cfg = ConfigFile::parse("anthropic:\n  selector_model: claude-opus-5-5\n").unwrap();
+        let env = cfg.to_env_map(ApiKeyPolicy::Allow).unwrap();
+        assert_eq!(
+            env["CONSULT_LLM_ANTHROPIC_SELECTOR_MODEL"],
+            "claude-opus-5-5"
+        );
     }
 
     #[test]

@@ -124,6 +124,7 @@ mod tests {
             fallback_model: "gpt-5.2".into(),
             default_model: None,
             default_models: vec![],
+            selector_models: std::collections::HashMap::new(),
         }
     }
 
