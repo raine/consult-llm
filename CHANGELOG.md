@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.37 (2026-10-07)
+
+- Provider selectors such as `anthropic` can now use your preferred model through `selector_model` configuration, while other models remain available by exact ID.
+
 ## v3.0.36 (2026-09-22)
 
 - Added Claude Opus 5.5 support.
