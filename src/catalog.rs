@@ -208,7 +208,7 @@ mod tests {
     }
 
     #[test]
-    fn test_model_registry_resolve_openai_selector_prefers_gpt_5_6_sol() {
+    fn test_model_registry_resolve_openai_selector_prefers_gpt_6_astra() {
         let reg = ModelRegistry {
             allowed_models: vec!["gpt-5.6-sol".into(), "gpt-6-astra".into()],
             fallback_model: "gpt-6-astra".into(),
@@ -217,7 +217,7 @@ mod tests {
             selector_models: HashMap::new(),
         };
 
-        assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-5.6-sol");
+        assert_eq!(reg.resolve_model(Some("openai")).unwrap(), "gpt-6-astra");
     }
 
     #[test]
