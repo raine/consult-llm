@@ -1,5 +1,10 @@
 # Changelog
 
+## v3.0.38 (2026-10-07)
+
+- Added GPT-6 Sol and GPT-6.1 Sol support for OpenAI API and CLI backends.
+- The `openai` selector now prefers GPT-6 Astra when allowed. Set `openai.selector_model` to choose a different preferred model.
+
 ## v3.0.37 (2026-10-07)
 
 - Provider selectors such as `anthropic` can now use your preferred model through `selector_model` configuration, while other models remain available by exact ID.
