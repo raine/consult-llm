@@ -25,6 +25,17 @@ review changes, debate approaches, or get unstuck on tricky bugs. It supports GP
 DeepSeek V4 Pro, MiniMax M2.7, Grok 4.7, and GLM 5.2, along with any `openrouter/*` model, with API and local CLI backends,
 multi-turn threads, git diff context, web-mode clipboard export, and a live monitor TUI.
 
+<a href="https://aventasks.dev/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://aventasks.dev/readme/aven-banner-dark.webp">
+    <img src="https://aventasks.dev/readme/aven-banner-light.webp" alt="aven: one task queue for you and your coding agents" width="100%">
+  </picture>
+</a>
+
+<sub>Also from the author of consult-llm: <a href="https://aventasks.dev/"><b>aven</b></a>, one
+queue for every project, with a keyboard-driven TUI for you and a CLI for your
+agents.</sub>
+
 ## Why a second opinion?
 
 A model reviewing its own work isn't an independent check. Even in a fresh
