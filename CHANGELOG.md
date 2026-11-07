@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.39 (2026-11-07)
+
+- Fixed API requests for specific OpenRouter models failing with “invalid model ID” errors. ([#24](https://github.com/raine/consult-llm/issues/24))
+
 ## v3.0.38 (2026-10-07)
 
 - Added GPT-6 Sol and GPT-6.1 Sol support for OpenAI API and CLI backends.
