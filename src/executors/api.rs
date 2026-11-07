@@ -124,7 +124,10 @@ impl LlmExecutor for ApiExecutor {
             });
 
         let request = ChatRequest {
-            model: turn.model().to_string(),
+            model: match turn.model().strip_prefix("openrouter/") {
+                Some(model) if model.contains('/') => model.to_string(),
+                _ => turn.model().to_string(),
+            },
             messages,
             stream: true,
             stream_options: Some(StreamOptions {

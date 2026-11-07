@@ -509,6 +509,42 @@ data: [DONE]\n\n\
         );
         assert_eq!(result.response, "Hello");
         assert_eq!(body["reasoning"], serde_json::json!({"effort": "high"}));
+        assert_eq!(body["model"], "z-ai/glm-5.2");
+    }
+
+    #[test]
+    fn mock_server_api_model_ids() {
+        let sse = b"data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"},\"finish_reason\":\"stop\"}]}\n\ndata: [DONE]\n\n";
+        for (provider, model, expected) in [
+            (
+                Provider::OpenRouter,
+                "openrouter/deepseek/deepseek-v4-pro",
+                "deepseek/deepseek-v4-pro",
+            ),
+            (
+                Provider::OpenRouter,
+                "openrouter/moonshotai/kimi-k3.1-pro",
+                "moonshotai/kimi-k3.1-pro",
+            ),
+            (
+                Provider::OpenRouter,
+                "openrouter/z-ai/glm-5.3",
+                "z-ai/glm-5.3",
+            ),
+            (Provider::OpenRouter, "openrouter/auto", "openrouter/auto"),
+            (
+                Provider::OpenRouter,
+                "openrouter/openrouter/auto",
+                "openrouter/auto",
+            ),
+            (Provider::DeepSeek, "deepseek-chat", "deepseek-chat"),
+            (Provider::OpenAI, "gpt-5.2", "gpt-5.2"),
+        ] {
+            let (req, _spool) = build_request("hi", model);
+            let (result, body) = execute_openai_compat_mock(sse, provider, "test-key", req);
+            assert_eq!(result.response, "Hello");
+            assert_eq!(body["model"], expected, "request model for {model}");
+        }
     }
 
     #[test]
