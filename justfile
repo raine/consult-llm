@@ -51,6 +51,10 @@ install:
     cargo install --offline --path . --locked
     cargo install --offline --path crates/monitor --locked
 
+# Install release binaries globally from GitHub Actions (Apple silicon macOS)
+install-ci:
+    scripts/install-ci
+
 # Release a new version
 release bump="patch":
     cargo-release --skip-publish {{bump}}
