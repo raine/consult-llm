@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v3.0.40 (2026-11-10)
 
 - Added Claude Fable 5.2 support, with the `anthropic` selector preferring it when allowed.
 
