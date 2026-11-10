@@ -302,6 +302,7 @@ mod tests {
                 "gpt-5.3-codex",
                 "gpt-5.2-codex",
                 "MiniMax-M2.7",
+                "claude-fable-5-2",
                 "claude-fable-5-1",
                 "claude-fable-5",
                 "claude-opus-5-5",

@@ -304,6 +304,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
         api_base_url: Some("https://api.anthropic.com"),
         api_protocol: ApiProtocol::AnthropicMessages,
         builtin_models: &[
+            "claude-fable-5-2",
             "claude-fable-5-1",
             "claude-fable-5",
             "claude-opus-5-5",
@@ -311,6 +312,7 @@ pub static PROVIDERS: &[ProviderSpec] = &[
             "claude-opus-4-7",
         ],
         selector_priorities: &[
+            "claude-fable-5-2",
             "claude-fable-5-1",
             "claude-fable-5",
             "claude-opus-5-5",
@@ -536,6 +538,7 @@ mod tests {
             ("gpt-5.3-codex", Provider::OpenAI),
             ("gpt-5.2-codex", Provider::OpenAI),
             ("MiniMax-M2.7", Provider::MiniMax),
+            ("claude-fable-5-2", Provider::Anthropic),
             ("claude-fable-5-1", Provider::Anthropic),
             ("claude-fable-5", Provider::Anthropic),
             ("claude-opus-5-5", Provider::Anthropic),

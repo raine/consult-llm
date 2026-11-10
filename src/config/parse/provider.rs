@@ -246,6 +246,15 @@ mod tests {
         assert!(
             config
                 .allowed_models
+                .contains(&"claude-fable-5-2".to_string())
+        );
+        assert_eq!(
+            registry.resolve_model(Some("claude-fable-5-2")).unwrap(),
+            "claude-fable-5-2"
+        );
+        assert!(
+            config
+                .allowed_models
                 .contains(&"claude-fable-5-1".to_string())
         );
         assert!(
@@ -271,7 +280,7 @@ mod tests {
         assert_eq!(config.providers[&Provider::Anthropic].backend, Backend::Api);
         assert_eq!(
             registry.resolve_model(Some("anthropic")).unwrap(),
-            "claude-fable-5-1"
+            "claude-fable-5-2"
         );
     }
 

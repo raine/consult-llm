@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Added Claude Fable 5.2 support, with the `anthropic` selector preferring it when allowed.
+
 ## v3.0.39 (2026-11-07)
 
 - Fixed API requests for specific OpenRouter models failing with “invalid model ID” errors. ([#24](https://github.com/raine/consult-llm/issues/24))

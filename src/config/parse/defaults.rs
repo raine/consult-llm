@@ -179,6 +179,10 @@ mod tests {
             registry.resolve_model(Some("claude-fable-5-1")).unwrap(),
             "claude-fable-5-1"
         );
+        assert_eq!(
+            registry.resolve_model(Some("claude-fable-5-2")).unwrap(),
+            "claude-fable-5-2"
+        );
         assert_eq!(config.default_models, vec!["claude-opus-5-5"]);
     }
 
