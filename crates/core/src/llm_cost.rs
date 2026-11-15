@@ -82,12 +82,29 @@ pub fn calculate_cost(prompt_tokens: u64, completion_tokens: u64, model: &str) -
                 total_cost: input_cost + output_cost,
             }
         }
-        None => CostResult {
+        None => published_cost(prompt_tokens, completion_tokens, model).unwrap_or(CostResult {
             input_cost: 0.0,
             output_cost: 0.0,
             total_cost: 0.0,
-        },
+        }),
     }
+}
+
+/// Prices models missing from the local table with the dated, source-cited
+/// rates in the `llm-prices` crate. Returns `None` when the model is unknown
+/// there too, so the estimate stays at zero instead of guessing.
+fn published_cost(prompt_tokens: u64, completion_tokens: u64, model: &str) -> Option<CostResult> {
+    let usage = llm_prices::Usage {
+        input: prompt_tokens,
+        output: completion_tokens,
+        ..Default::default()
+    };
+    let cost = llm_prices::lookup(model)?.cost_usage(&usage)?;
+    Some(CostResult {
+        input_cost: cost.input,
+        output_cost: cost.output,
+        total_cost: cost.total,
+    })
 }
 
 #[cfg(test)]
@@ -130,5 +147,32 @@ mod tests {
     fn prices_openrouter_mimo() {
         let cost = calculate_cost(1_000_000, 1_000_000, "openrouter/xiaomi/mimo-v2.5-pro");
         assert!((cost.total_cost - 1.305).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn prices_models_missing_from_table_with_published_rates() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "claude-opus-5-5");
+        assert!((cost.input_cost - 4.0).abs() < 1e-9);
+        assert!((cost.output_cost - 20.0).abs() < 1e-9);
+
+        let cost = calculate_cost(10_000, 1_000, "gpt-6-astra");
+        assert!((cost.input_cost - 0.1).abs() < 1e-9);
+        assert!((cost.output_cost - 0.05).abs() < 1e-9);
+        assert!((cost.total_cost - 0.15).abs() < 1e-9);
+    }
+
+    #[test]
+    fn local_table_takes_precedence() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "gpt-5.3-codex");
+        assert!((cost.input_cost - 2.5).abs() < f64::EPSILON);
+        assert!((cost.output_cost - 10.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn unknown_model_costs_zero() {
+        let cost = calculate_cost(1_000_000, 1_000_000, "claude-fable-5-2");
+        assert_eq!(cost.total_cost, 0.0);
+        let cost = calculate_cost(1_000_000, 1_000_000, "grok-4.7");
+        assert_eq!(cost.total_cost, 0.0);
     }
 }

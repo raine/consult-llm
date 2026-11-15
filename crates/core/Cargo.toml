@@ -15,6 +15,7 @@ uuid = { workspace = true }
 dirs = { workspace = true }
 libc = { workspace = true }
 fs2 = "0.4"
+llm-prices = "1.1"
 
 [dev-dependencies]
 tempfile = "3"
