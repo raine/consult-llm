@@ -884,8 +884,10 @@ direnv loads the variables automatically when you enter the directory and unload
 
 ### Known models with pricing
 
-Cost estimates are displayed for known models. Any model name is accepted; cost
-estimates show as zero for models without pricing data.
+Cost estimates are displayed for known models. Models not in the table below
+are priced from the [llm-prices](https://crates.io/crates/llm-prices) crate when
+it lists them. Any model name is accepted; cost estimates show as zero for models
+without pricing data.
 
 <details>
 <summary>Pricing table</summary>
